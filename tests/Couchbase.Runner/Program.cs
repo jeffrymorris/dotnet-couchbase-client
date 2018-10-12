@@ -1,0 +1,36 @@
+﻿using System;
+using System.Threading.Tasks;
+
+namespace Couchbase.Runner
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var config = new Configuration().
+                WithServers("http://10.144.191.101:8091").
+                WithBucket("default").
+                WithCredentials("Administrator", "password");
+
+            var cluster = new Cluster();
+            cluster.ConnectAsync(config).ConfigureAwait(false).GetAwaiter().GetResult();
+
+            var bucket = cluster.GetBucket("default");
+            bucket.LoadManifest("manifest.json");
+
+            var coll = bucket.GetCollection("_default", "_default");
+
+            //0x7f1
+            var set = coll.Insert(new Document<string>
+            {
+                Key = "Hello",
+                Content = "World"
+            });
+            
+            set.ExecuteAsync().GetAwaiter().GetResult();
+
+            var get = bucket.Get<dynamic>("Hello");
+            var result = get.ExecuteAsync().Result;
+        }
+    }
+}
