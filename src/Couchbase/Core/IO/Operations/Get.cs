@@ -48,9 +48,9 @@ namespace Couchbase.Core.IO.Operations
             throw new NotImplementedException();
         }
 
-        public Task<IDocument_T<T>> ExecuteAsync()
+        public Task<IDocument<T>> ExecuteAsync()
         {
-            var tcs = new TaskCompletionSource<IDocument_T<T>>();
+            var tcs = new TaskCompletionSource<IDocument<T>>();
             Completed = s =>
             {
                 //Status will be Success if bucket select was bueno

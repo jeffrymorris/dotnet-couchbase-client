@@ -5,11 +5,9 @@ using Couchbase.Core;
 
 namespace Couchbase
 {
-    public interface IDocument<T>
+    public interface IDocument
     {
         string Id { get; set; }
-
-        T Content { get; set; }
 
         TimeSpan Expiry { get; set; }
 
