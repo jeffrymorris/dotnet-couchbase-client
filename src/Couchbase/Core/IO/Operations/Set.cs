@@ -59,8 +59,8 @@ namespace Couchbase.Core.IO.Operations
         public uint Opaque { get; set; }
         public string Key
         {
-            get => _document.Key;
-            set => _document.Key = value;
+            get => _document.Id;
+            set => _document.Id = value;
         }
 
         public OpCode OpCode => OpCode.Add;

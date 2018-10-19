@@ -21,7 +21,7 @@ namespace Couchbase
 {
     public interface IBucketSender
     {
-        Task Send<T>(IOperation<T> op, TaskCompletionSource<IDocument<T>> tcs);
+        Task Send<T>(IOperation<T> op, TaskCompletionSource<IDocument_T<T>> tcs);
     }
     public class CouchbaseBucket : IBucket, IBucketSender
     {
@@ -197,22 +197,22 @@ namespace Couchbase
             throw new Exception("Scope not found: " + scope);//todo make exception more specific
         }
 
-        public IMutationOperation Upsert<T>(IDocument<T> document)
+        public IMutationOperation Upsert<T>(IDocument_T<T> document)
         {
             throw new NotImplementedException();
         }
 
-        public IMutationOperation Insert<T>(IDocument<T> document)
+        public IMutationOperation Insert<T>(IDocument_T<T> document)
         {
             throw new NotImplementedException();
         }
 
-        public IMutationOperation Replace<T>(IDocument<T> document)
+        public IMutationOperation Replace<T>(IDocument_T<T> document)
         {
             throw new NotImplementedException();
         }
 
-        public IMutationOperation Remove<T>(IDocument<T> document)
+        public IMutationOperation Remove<T>(IDocument_T<T> document)
         {
             throw new NotImplementedException();
         }
@@ -244,7 +244,7 @@ namespace Couchbase
             }
         }
 
-        async Task IBucketSender.Send<T>(IOperation<T> op, TaskCompletionSource<IDocument<T>> tcs)
+        async Task IBucketSender.Send<T>(IOperation<T> op, TaskCompletionSource<IDocument_T<T>> tcs)
         {
             await this._connection.SendAsync(op.Write(), op.Completed);
             await tcs.Task;
