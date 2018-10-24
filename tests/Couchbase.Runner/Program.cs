@@ -29,7 +29,7 @@ namespace Couchbase.Runner
             
 
             var get = bucket.Get<dynamic>("Hello");
-            var result = get.ExecuteAsync().Result;
+            var result = get.Result;
         }
     }
 }
