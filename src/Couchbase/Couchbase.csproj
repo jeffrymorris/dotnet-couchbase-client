@@ -14,14 +14,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\Diagnostics\Tracing\TracerExtensions.cs" />
+    <Compile Remove="Core\Diagnostics\Tracing\TracerFactory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Core\Diagnostics\Logging\" />
-    <Folder Include="Core\Diagnostics\Tracing\" />
     <Folder Include="Management\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="OpenTracing" Version="0.12.0" />
   </ItemGroup>
 
   <ItemGroup>

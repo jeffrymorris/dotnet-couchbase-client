@@ -60,5 +60,6 @@ namespace Couchbase
         public IEnumerable<string> Buckets => _buckets;
         public string UserName { get; set; }
         public string Password { get; set; }
+        public bool OrphanedResponseLoggingEnabled { get; set; }
     }
 }
