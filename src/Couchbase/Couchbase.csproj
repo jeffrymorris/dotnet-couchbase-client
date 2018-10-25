@@ -5,14 +5,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Core\Logging\" />
-    <Folder Include="Core\Tracing\" />
+    <Compile Remove="Core\Logging\**" />
+    <Compile Remove="Core\Tracing\**" />
+    <EmbeddedResource Remove="Core\Logging\**" />
+    <EmbeddedResource Remove="Core\Tracing\**" />
+    <None Remove="Core\Logging\**" />
+    <None Remove="Core\Tracing\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Core\Diagnostics\Logging\" />
+    <Folder Include="Core\Diagnostics\Tracing\" />
     <Folder Include="Management\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System">
+      <HintPath>System</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

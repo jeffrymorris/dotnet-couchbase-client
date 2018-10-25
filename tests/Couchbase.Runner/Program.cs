@@ -23,14 +23,13 @@ namespace Couchbase.Runner
             //0x7f1
             var set = coll.Insert(new Document<string>
             {
-                Key = "Hello",
+                Id = "Hello",
                 Content = "World"
             });
             
-            set.ExecuteAsync().GetAwaiter().GetResult();
 
             var get = bucket.Get<dynamic>("Hello");
-            var result = get.ExecuteAsync().Result;
+            var result = get.Result;
         }
     }
 }
