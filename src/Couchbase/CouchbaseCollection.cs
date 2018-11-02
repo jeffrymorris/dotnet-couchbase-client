@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 
 namespace Couchbase
 {
-    public class Collection : ICollection
+    public class CouchbaseCollection : ICollection
     {
-        public Collection(IBucket bucket, string cid, string name)
+        public CouchbaseCollection(IBucket bucket, string cid, string name)
         {
             Bucket = bucket;
             Cid = cid;
@@ -29,6 +29,8 @@ namespace Couchbase
 
         public Task<IDocument<T>> Get<T>(string id, Action<GetOptions> options)
         {
+           var getOptions = new GetOptions();
+            options(getOptions);
             throw new NotImplementedException();
         }
 
