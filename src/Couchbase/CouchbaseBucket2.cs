@@ -192,7 +192,7 @@ namespace Couchbase
                 var collection = collections.FirstOrDefault(x=>x.Name==name);
                 if (collection == null)
                 {
-                    throw new Exception("Collection not found: " + name);//todo make exception more specific
+                    throw new Exception("CouchbaseCollection not found: " + name);//todo make exception more specific
                 }
                 return collection;
             }
@@ -462,7 +462,7 @@ namespace Couchbase
                 _scopes.TryAdd(scope.name, new List<ICollection>());
                 foreach (var collection in scope.collections)
                 {
-                    _scopes[scope.name].Add(new Collection(this, collection.uid, collection.name));
+                    _scopes[scope.name].Add(new CouchbaseCollection(this, collection.uid, collection.name));
                 }
             }
         }

@@ -20,12 +20,16 @@ namespace Couchbase.Runner
 
             var coll = bucket.GetCollection("_default", "_default");
 
+            coll.Get<dynamic>("id", options => { options.Timeout = new TimeSpan(0, 0, 30);});
+
             //0x7f1
             var set = coll.Insert(new Document<string>
             {
                 Id = "Hello",
                 Content = "World"
             });
+
+
             
 
             var get = bucket.Get<dynamic>("Hello");
