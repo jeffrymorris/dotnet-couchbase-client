@@ -1,8 +1,8 @@
 ﻿
 namespace Couchbase
 {
-    public interface IDocument<T> : IDocument
+    public interface IDocument<TBody> : IDocument
     {
-        T Content { get; set; }
+        TBody Body { get; set; }
     }
 }

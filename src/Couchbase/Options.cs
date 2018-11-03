@@ -155,7 +155,30 @@ namespace Couchbase
     public class GetOptions
     {
         public TimeSpan Timeout { get; set; }
+
+        public bool IncludeBody { get; set; }
     }
 
     #endregion
+
+    public class XAttrOptions
+    {
+        public bool CreateParents{ get; set; }
+
+        //add more
+    }
+
+    public class SubDocFetchOptions
+    {
+        public bool CreateParents{ get; set; }
+
+        //add more
+    }
+
+    public class SubDocMutateOptions
+    {
+        public bool CreateParents{ get; set; }
+
+        //add more
+    }
 }
