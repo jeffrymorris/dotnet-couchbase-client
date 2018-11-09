@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Couchbase.Services.Query;
 
 namespace Couchbase
 {

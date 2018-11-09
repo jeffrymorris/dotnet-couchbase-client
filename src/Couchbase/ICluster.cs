@@ -11,12 +11,12 @@ namespace Couchbase
 
         Task ConnectAsync(IConfiguration config);
 
-        IBucket GetBucket(string name);
+        Task<IBucket> GetBucket(string name);
 
-        IQueryResponse Query(IQueryRequest request);
+        Task<IQueryResponse<T>> Query<T>(IQueryRequest request);
 
-        IAnalyticsResponse Analyze(IAnalyticsRequest request);
+        Task<IAnalyticsResponse<T>> Analyze<T>(IAnalyticsRequest request);
 
-        ISearchResponse Search(ISearchRequest request);
+        Task<ISearchResponse<T>> Search<T>(ISearchRequest request);
     }
 }

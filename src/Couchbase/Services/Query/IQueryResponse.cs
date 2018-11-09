@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Couchbase
 {
-    public interface IQueryResponse
+    public interface IQueryResponse<T>
     {
     }
 }
