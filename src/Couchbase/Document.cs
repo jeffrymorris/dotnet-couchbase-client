@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Couchbase.Core;
 
 namespace Couchbase
@@ -10,6 +11,16 @@ namespace Couchbase
         public long Cas { get; }
         public MutationToken MutationToken { get; }
         public TBody Body { get; set; }
+
+        public TBody GetBody()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetBody(TBody json)
+        {
+            throw new NotImplementedException();
+        }
 
         public TValue Get<TValue>(string path, Action<SubDocFetchOptions> options = null)
         {
@@ -66,12 +77,12 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public void ArrayCount<TValue>(string path, TValue value, Action<SubDocMutateOptions> options = null)
+        public void Counter<TValue>(string path, TValue value, Action<SubDocMutateOptions> options = null)
         {
             throw new NotImplementedException();
         }
 
-        public void WriteAttribute<TValue>(TValue value, string path, Action<XAttrOptions> options = null)
+        public void SetAttribute<TValue>(string path, TValue value, Action<XAttrOptions> options = null)
         {
             throw new NotImplementedException();
         }

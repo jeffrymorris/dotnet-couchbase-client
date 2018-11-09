@@ -13,7 +13,7 @@ namespace Couchbase
         
         long Cas { get; }
 
-        MutationToken MutationToken { get; }
+        MutationToken Token { get; }
 
         #endregion
 
@@ -45,13 +45,13 @@ namespace Couchbase
 
         void ArrayAddUnique<TValue>(string path, TValue value, Action<SubDocMutateOptions> options = null);
 
-        void ArrayCount<TValue>(string path, TValue value, Action<SubDocMutateOptions> options = null);
+        void Counter<TValue>(string path, TValue value, Action<SubDocMutateOptions> options = null);
 
         #endregion;
 
         #region XAttrs & virtual XAttrs
 
-        void WriteAttribute<TValue>(TValue value, string path, Action<XAttrOptions> options = null);
+        void SetAttribute<TValue>(string path, TValue value, Action<XAttrOptions> options = null);
             
         TValue GetAttribute<TValue>(string path);
 
