@@ -3,6 +3,7 @@
 namespace Couchbase
 {
     #region Insert Options
+
     public class InsertOptions
     {
         public TimeSpan Timeout { get; set; }
@@ -163,21 +164,23 @@ namespace Couchbase
 
     public class XAttrOptions
     {
-        public bool CreateParents{ get; set; }
+        public bool CreatePath { get; set; }
+
+        public bool CreateDocument { get; set; }
 
         //add more
     }
 
     public class SubDocFetchOptions
     {
-        public bool CreateParents{ get; set; }
+        public bool CreatePath { get; set; }
 
         //add more
     }
 
     public class SubDocMutateOptions
     {
-        public bool CreateParents{ get; set; }
+        public bool CreatePath { get; set; }
 
         //add more
     }
