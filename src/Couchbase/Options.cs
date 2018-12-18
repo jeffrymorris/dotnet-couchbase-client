@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 namespace Couchbase
 {
@@ -43,6 +45,8 @@ namespace Couchbase
         public ReplicateTo ReplicateTo { get; set; }
 
         public PersistTo PersistTo { get; set; }
+
+        public DurabilityLevel  DurabilityLevel{ get; set; }
     }
 
     #endregion
@@ -155,9 +159,38 @@ namespace Couchbase
 
     public class GetOptions
     {
+        public bool IncludeExpiration { get; set; }
+
+        public bool CreatePath { get; set; }
+
         public TimeSpan Timeout { get; set; }
 
-        public bool IncludeBody { get; set; }
+        public List<string> ProjectList { get; set; }
+
+        public GetOptions WithTimeout(TimeSpan timeout)
+        {
+            Timeout = timeout;
+            return this;
+        }
+
+        public GetOptions Project(params string[] fields)
+        {
+            if(ProjectList == null) ProjectList = new List<string>();
+            ProjectList.AddRange(fields);
+            return this;
+        }
+
+        public GetOptions WithCreatePath(bool createPath)
+        {
+            CreatePath = createPath;
+            return this;
+        }
+
+        public GetOptions WithExpiration()
+        {
+            IncludeExpiration = true;
+            return this;
+        }
     }
 
     #endregion
@@ -171,17 +204,89 @@ namespace Couchbase
         //add more
     }
 
-    public class SubDocFetchOptions
+    public struct LookupInOptions
     {
-        public bool CreatePath { get; set; }
+        public LookupInOptions Path(string path)
+        {
+            return this;
+        }
 
-        //add more
+        public LookupInOptions Exists(string path)
+        {
+            return this;
+        }
+
+        public LookupInOptions XAttr(string path)
+        {
+            return this;
+        }
+
+        public LookupInOptions Timeout(TimeSpan timeout)
+        {
+            return this;
+        } 
     }
 
-    public class SubDocMutateOptions
+    public struct MutateOptions
     {
-        public bool CreatePath { get; set; }
+        internal bool _CreatePath { get; set; }
+        internal TimeSpan _Timeout { get; set; }
+        internal Dictionary<string, object> _ops;
 
-        //add more
+        public MutateOptions CreatePath(bool createPath)
+        {
+            _CreatePath = createPath;
+            return this;
+        }
+
+        public MutateOptions Timeout(TimeSpan timeout)
+        {
+            _Timeout = timeout;
+            return this;
+        }
+
+        public MutateOptions Upsert<T>(string path, T value)
+        {
+            if(_ops == null) _ops = new Dictionary<string, object>();
+            _ops.Add(path, value);
+            return this;
+        }
+
+        public MutateOptions Insert<T>(string path, T value)
+        {
+            if(_ops == null) _ops = new Dictionary<string, object>();
+            _ops.Add(path, value);
+            return this;
+        }
+
+        public MutateOptions Replace<T>(string path, T value)
+        {
+            return this;
+        }
+
+        public MutateOptions Remove(string path)
+        {
+            return this;
+        }
+
+        public MutateOptions ArrayAppend(string path, params object[] values)
+        {
+            return this;
+        }
+
+        public MutateOptions ArrayPrepend(string path, params object[] values)
+        {
+            return this;
+        }
+
+        public MutateOptions ArrayInsert(string path, params object[] values)
+        {
+            return this;
+        }
+
+        public MutateOptions ArrayAddUnique(string path, params object[] values)
+        {
+            return this;
+        }
     }
 }
