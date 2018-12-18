@@ -1,46 +1,62 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
+using System.Security.Authentication;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Couchbase.Services.Query.Couchbase.N1QL;
+using Xunit;
 
 
 namespace Couchbase.UnitTests
 {
-    [TestFixture]
     public class ClusterTests
     {
-        [Test]
-        public async Task Test_ClusterCreation()
+        [Fact]
+        public async Task Authenticate_Does_Not_Throw_Exception()
         {
-            //cluster n' stuff
+
             var cluster = new Cluster();
-            cluster.ConnectAsync(new Configuration());
-
-            //collection from bucket
-            var collection = cluster.GetBucket("boo").GetCollection("key");
-
-            //configure an operation on the collection
-            var set = collection.Upsert(new Document<dynamic>())   
-                .WithDurability(PersistTo.One, ReplicateTo.One)
-                .WithExpiry(TimeSpan.FromHours(1))
-                .WithTimeout(TimeSpan.FromMinutes(1))
-                .WithCas(0);
-
-            await set.ExecuteAsync();
-            
-            var get = collection.Get<dynamic>("thekey")
-                .WithDurability(PersistTo.One, ReplicateTo.One) 
-                .WithTimeout(TimeSpan.FromMinutes(1));
-
-            var result = await get.ExecuteAsync();
-
-            var query = collection.Query("SELECT * FROM `foo`;");
-
-            var count = 0;
-            while (count++<1000000)
+            await cluster.ConnectAsync(new Configuration
             {
-                cluster.GetBucket("boo").GetCollection("key");
-            }
+                UserName = "Administrator",
+                Password = "password"
+            }).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async Task Authenticate_Throws_ArgumentNullException_When_Crendentials_Not_Provided()
+        {
+
+            var cluster = new Cluster();
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await cluster.ConnectAsync(new Configuration()).ConfigureAwait(false));
+        }
+
+        [Fact]
+        public async Task GetBucket_Returns_Bucket()
+        {
+            var cluster = new Cluster();
+            await cluster.ConnectAsync(new Configuration
+            {
+                UserName = "Administrator",
+                Password = "password"
+            }).ConfigureAwait(false);
+
+            var bucket = cluster.GetBucket("default");
+            Assert.NotNull(bucket);
+        }
+
+        [Fact]
+        public async Task Test_Query()
+        {
+            var cluster = new Cluster();
+            await cluster.ConnectAsync(new Configuration
+            {
+                UserName = "Administrator",
+                Password = "password"
+            }).ConfigureAwait(false);
+
+            var result = cluster.Query<dynamic>("SELECT x.* FROM `default` WHERE x.Type=&0",
+                parameter => parameter.Add("poo"), 
+                options => options.Encoding(Encoding.Utf8));
         }
     }
 }
