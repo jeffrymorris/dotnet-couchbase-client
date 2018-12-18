@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace Couchbase.UnitTests
@@ -7,48 +10,199 @@ namespace Couchbase.UnitTests
     public class CouchbaseCollectionsTests
     {
         [Fact]
-        public async Task Test()
+        public async Task Scenario_A()
         {
-            //create a cluster and connect to it
-            var cluster = new Cluster();
-            await cluster.ConnectAsync(new Configuration()).ConfigureAwait(false);
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
 
-            //get the bucket and people collection with scope name
-            var bucket = cluster.GetBucket("default");
-            var people = bucket.GetCollection("myscope", "people");
+            // 1) fetch a full readResult that is a json readResult
+            var result = await collection.Get("key1",
+                options => { options.Timeout = new TimeSpan(0, 0, 1); });
 
-            //fetch the doc header and explicitly do not include the body
-            var person = await people.Get<dynamic>("id", options =>
+            // 2) Make a modification to the content
+            var person = result.Value.ContentAs<dynamic>();
+            person.age = 45;
+            person.arms = 1;
+
+            // 3) replace the readResult on the server
+            var mutateResults = await collection.Replace(result.Value.Id, (object) person,
+                options => { options.Timeout = new TimeSpan(); });
+
+            Assert.True(mutateResults.Cas > 0);
+        }
+
+        [Fact]
+        public async Task Scenario_B()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
+
+            //1) fetch a readResult fragment which is a json array with elements
+            var result = await collection.Get("key1",
+                options => {
+                    options.CreatePath = true;
+                    options.Project("legs");
+                });
+
+            // 2) make modifications to the content
+            var items = result.Value.ContentAs<List<int>>();
+            items.Add(13);
+            items.Add(42);
+
+            //3) replace the fragment in the original readResult - NOTE: ArrayAppend on the server is better
+            var mutateResults = await collection.MutateIn("key1",
+                options =>
+                {
+                    options.CreatePath(true);
+                    options.Replace("legs", items);
+                });
+
+            Assert.True(mutateResults.Cas > 0);
+        }
+
+        [Fact]
+        public async Task Scenario_C()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
+
+            //old skewl observe-based/mutation token durability
+            await collection.Remove("key1", options =>
             {
-                options.Timeout = new TimeSpan(0, 0, 30);
-                options.IncludeBody = false;
-            }).ConfigureAwait(false);
+                options.PersistTo = PersistTo.One;
+                options.ReplicateTo = ReplicateTo.Two;
+            });
 
-            //update the doc on the server
-            person.Insert("hair", "brown");
-            person.Insert("eyes", "green");
+            //new skewl 'asynchronous' durability
+            await collection.Remove("key2", options =>
+            {
+                options.DurabilityLevel = DurabilityLevel.Majority;
+            });
+        }
 
-            //update it..
-            person.Upsert("eyes", "blue");
+        [Fact]
+        public async Task Scenario_D()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
 
-            //fetch just the eye color
-            var eyeColor = person.Get<string>("eyes");
-            Console.WriteLine("My eyes are {eyeColor}", eyeColor);
+            //Note this is the same as A since we pass the doc in with the CAS
 
-            //go fetch the doc body - if IncludeBody is false this will do a GET fetch or if true pull local cached
-            var json = person.Body;
-            Console.WriteLine(json);
+            do
+            {
+                // 1) fetch a full readResult that is a json readResult
+                var result = await collection.Get("key1",
+                    options => { options.Timeout = new TimeSpan(0, 0, 1); });
 
-            //write a new extended attribute
-            person.SetAttribute("dateInactive", new DateTime(2018, 10, 23));
+                // 2) Make a modification to the content
+                var person = result.Value.ContentAs<dynamic>();
+                person.age = 45;
+                person.arms = new List<int> {1};
 
-            //get the new extended attribute
-            var dateInactive = person.GetAttribute<DateTime>("dateInactive");
-            Console.WriteLine("This account de-activated {dateInactive}", dateInactive);
+                try
+                {
 
-            //get the extended virtual attribute expires
-            var expires = person.GetVirtualAttribute<DateTime>("exptime");
-            Console.WriteLine("This record was added {expires}", expires);
+                    // 3) replace the readResult on the server
+                    var mutateResults = await collection.Replace(result.Value.Id, (object) person,
+                        options => { options.Timeout = new TimeSpan(0, 0, 1); });
+                }
+                catch (KeyValueException e)
+                {
+                }
+            } while (true);
+        }
+
+        /// <summary>
+        /// "Entity" type object
+        /// </summary>
+        public class Person
+        {
+            public string Name { get; set; }
+
+            public int Age { get; set; }
+
+            public List<int> Arms { get; set; }
+        }
+
+        [Fact]
+        public async Task Scenario_E()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
+
+            // 1) Fetch a full ReadResult and marshal it into a language entity rather than a generic json type
+            var result = await collection.Get("key1",
+                options => { options.Timeout = new TimeSpan(0, 0, 1); });
+
+            // 2) Make a modification to the content
+            var person = result.Value.ContentAs<Person>();
+            person.Age = 45;
+            person.Arms = new List<int> {1};
+
+            // 3) replace the readResult on the server
+            var mutateResults = await collection.Replace(result.Value.Id, person, 
+                options => { options.Timeout  = new TimeSpan(0, 0, 1); });
+
+            Assert.True(mutateResults.Cas > 0);
+        }
+
+        [Fact]
+        public async Task Scenario_F()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
+
+            var result = await collection.Get("key2",
+                options =>
+                {
+                    options.WithTimeout(new TimeSpan(0, 0, 0, 5));
+                    options.WithCreatePath(false);
+                    options.Project("age", "arms", "poo", "bar");
+              });
+
+            // 2) Make a modification to the content
+            var person = result.Value.ContentAs<Person>();
+            person.Age = 45;
+            person.Arms = new List<int> {1};
+
+            // 3) replace the readResult on the server
+            var mutateResults = await collection.MutateIn("key1",
+                options =>
+                {
+                    options.Timeout(new TimeSpan(0, 0, 1));
+                    options.Replace("age", person.Age);
+                    options.Replace("arms", person.Arms);
+                });
+
+            Assert.True(mutateResults.Cas > 0);
+        }
+
+        [Fact]
+        public async Task Scenario_F_2()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
+
+                var result = await collection.Get("key2",
+                    new GetOptions().
+                        WithTimeout(new TimeSpan(0, 0, 0, 5)).
+                        Project("age", "arms", "poo", "bar"));
+
+            // 2) Make a modification to the content
+            var person = result.Value.ContentAs<Person>();
+            person.Age = 45;
+            person.Arms = new List<int> {1};
+
+            // 3) replace the readResult on the server
+            var mutateResults = await collection.MutateIn("key1",
+                options =>
+                {
+                    options.Timeout(new TimeSpan(0, 0, 1));
+                    options.Replace("age", person.Age);
+                    options.Replace("arms", person.Arms);
+                });
+
+            Assert.True(mutateResults.Cas > 0);
         }
     }
 }
