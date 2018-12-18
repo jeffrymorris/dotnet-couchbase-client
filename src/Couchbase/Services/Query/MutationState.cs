@@ -14,13 +14,13 @@ namespace Couchbase.Services.Query
         private readonly List<MutationToken> _tokens = new List<MutationToken>();
 
         /// <summary>
-        /// Creates a <see cref="MutationToken"/> from a list of <see cref="IDocument"/>'s assuming enhanced durability is enabled.
+        /// Creates a <see cref="MutationToken"/> from a list of <see cref="IGetResult{T}"/>'s assuming enhanced durability is enabled.
         /// </summary>
-        /// <param name="documents">The documents.</param>
+        /// <param name="mutationResults">The mutationResults.</param>
         /// <returns></returns>
-        public static MutationState From(params IDocument[] documents)
+        public static MutationState From(params IStoreResult[] mutationResults)
         {
-            return new MutationState().Add(documents);
+            return new MutationState().Add(mutationResults);
         }
 
         /// <summary>
@@ -34,22 +34,22 @@ namespace Couchbase.Services.Query
         }
 
         /// <summary>
-        /// Adds a <see cref="MutationToken"/> to the <see cref="MutationState"/> from a list of <see cref="IDocument"/> assuming enhanced durability is enabled.
+        /// Adds a <see cref="MutationToken"/> to the <see cref="MutationState"/> from a list of <see cref="IGetResult{T}"/> assuming enhanced durability is enabled.
         /// </summary>
-        /// <param name="documents">The documents.</param>
-        /// <exception cref="ArgumentException">If a <see cref="IDocument"/> does not contain a valid <see cref="MutationToken"/>.</exception>
+        /// <param name="mutationResults">The mutationResults.</param>
+        /// <exception cref="ArgumentException">If a <see cref="IGetResult{T}"/> does not contain a valid <see cref="MutationToken"/>.</exception>
         /// <returns>The <see cref="MutationState"/> object itself.</returns>
-        public MutationState Add(params IDocument[] documents)
+        public MutationState Add(params IStoreResult[] mutationResults)
         {
-            foreach (var document in documents)
+            foreach (var document in mutationResults)
             {
-                if (document.Token.IsSet)
+                if (document.MutationToken.IsSet)
                 {
-                    _tokens.Add(document.Token);
+                    _tokens.Add(document.MutationToken);
                 }
                 else
                 {
-                    throw new ArgumentException("Document does not contain valid MutationToken.");
+                    throw new ArgumentException("ReadResult does not contain valid MutationToken.");
                 }
             }
             return this;

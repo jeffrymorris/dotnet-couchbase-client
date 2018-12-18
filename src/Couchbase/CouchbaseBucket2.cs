@@ -19,9 +19,9 @@ using Newtonsoft.Json;
 
 namespace Couchbase
 {
-    public interface IBucketSender
+   /* public interface IBucketSender
     {
-        Task Send<T>(IOperation<T> op, TaskCompletionSource<IDocument<T>> tcs);
+        Task Send<T>(IOperation<T> op, TaskCompletionSource<IReadResult<T>> tcs);
     }
 
     public class CouchbaseBucket2 : IBucket, IBucketSender
@@ -44,14 +44,14 @@ namespace Couchbase
         [Obsolete]
         public async Task BootstrapAsync(Uri uri)
         {
-            /*
-             * 1-Create a socket connection
-             * 2-Authenticate connection - SASL PLAIN
-             * 3-Perform Select bucket
-             * 4-Fetch the cluster map
-             * 5-Enable server features using Helo
-             * 6-Fetch the ErrorMap
-             */
+            
+             // 1-Create a socket connection
+            //2-Authenticate connection - SASL PLAIN
+             // 3-Perform Select bucket
+             // 4-Fetch the cluster map
+             // 5-Enable server features using Helo
+            // 6-Fetch the ErrorMap
+             //
 
             //should be abstracted
             var ipAddress = uri.GetIpAddress(false);
@@ -199,100 +199,100 @@ namespace Couchbase
             throw new Exception("Scope not found: " + scope);//todo make exception more specific
         }
 
-        public Task<IDocument<T>> Get<T>(string id, TimeSpan timeSpan = new TimeSpan())
+        public Task<IReadResult<T>> Get<T>(string id, TimeSpan timeSpan = new TimeSpan())
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Get<T>(string id, GetOptions options)
+        public Task<IReadResult<T>> Get<T>(string id, GetOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Get<T>(string id, Action<GetOptions> options)
+        public Task<IReadResult<T>> Get<T>(string id, Action<GetOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> GetAndLock<T>(string id, TimeSpan expiration, TimeSpan timeSpan = new TimeSpan(), uint cas = 0)
+        public Task<IReadResult<T>> GetAndLock<T>(string id, TimeSpan expiration, TimeSpan timeSpan = new TimeSpan(), uint cas = 0)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> GetAndLock<T>(string id, GetAndLockOptions options)
+        public Task<IReadResult<T>> GetAndLock<T>(string id, GetAndLockOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> GetAndLock<T>(string id, Action<GetAndLockOptions> options)
+        public Task<IReadResult<T>> GetAndLock<T>(string id, Action<GetAndLockOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> GetAndTouch<T>(string id, TimeSpan expiration, TimeSpan timeout = new TimeSpan())
+        public Task<IReadResult<T>> GetAndTouch<T>(string id, TimeSpan expiration, TimeSpan timeout = new TimeSpan())
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> GetAndTouch<T>(string id, GetAndTouchOptions options)
+        public Task<IReadResult<T>> GetAndTouch<T>(string id, GetAndTouchOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> GetAndTouch<T>(string id, Action<GetAndTouchOptions> options)
+        public Task<IReadResult<T>> GetAndTouch<T>(string id, Action<GetAndTouchOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Upsert<T>(IDocument<T> document, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IReadResult<T>> Upsert<T>(IReadResult<T> readResult, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Upsert<T>(IDocument<T> document, UpsertOptions options)
+        public Task<IReadResult<T>> Upsert<T>(IReadResult<T> readResult, UpsertOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Upsert<T>(IDocument<T> document, Action<UpsertOptions> options)
+        public Task<IReadResult<T>> Upsert<T>(IReadResult<T> readResult, Action<UpsertOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Insert<T>(IDocument<T> document, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IReadResult<T>> Insert<T>(IReadResult<T> readResult, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Insert<T>(IDocument<T> document, InsertOptions options)
+        public Task<IReadResult<T>> Insert<T>(IReadResult<T> readResult, InsertOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Insert<T>(IDocument<T> document, Action<InsertOptions> options)
+        public Task<IReadResult<T>> Insert<T>(IReadResult<T> readResult, Action<InsertOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Replace<T>(IDocument<T> document, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IReadResult<T>> Replace<T>(IReadResult<T> readResult, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Replace<T>(IDocument<T> document, ReplaceOptions options)
+        public Task<IReadResult<T>> Replace<T>(IReadResult<T> readResult, ReplaceOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Replace<T>(IDocument<T> document, Action<ReplaceOptions> options)
+        public Task<IReadResult<T>> Replace<T>(IReadResult<T> readResult, Action<ReplaceOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> Remove<T>(string id, TimeSpan timeSpan = new TimeSpan(), uint cas = 0, PersistTo persistTo = PersistTo.Zero,
+        public Task<IReadResult<T>> Remove<T>(string id, TimeSpan timeSpan = new TimeSpan(), uint cas = 0, PersistTo persistTo = PersistTo.Zero,
             ReplicateTo replicateTo = ReplicateTo.Zero)
         {
             throw new NotImplementedException();
@@ -314,91 +314,91 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<ulong>> Increment(string id, IncrementOptions options)
+        public Task<IReadResult<ulong>> Increment(string id, IncrementOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<ulong>> Increment(string id, Action<IncrementOptions> options)
+        public Task<IReadResult<ulong>> Increment(string id, Action<IncrementOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<ulong>> Decrement(string id, ulong delta, ulong initial, TimeSpan timeSpan = new TimeSpan(),
+        public Task<IReadResult<ulong>> Decrement(string id, ulong delta, ulong initial, TimeSpan timeSpan = new TimeSpan(),
             TimeSpan expiration = new TimeSpan(), uint cas = 0)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<ulong>> Decrement(string id, DecrementOptions options)
+        public Task<IReadResult<ulong>> Decrement(string id, DecrementOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<ulong>> Decrement(string id, Action<DecrementOptions> options)
+        public Task<IReadResult<ulong>> Decrement(string id, Action<DecrementOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<string>> Append(string id, string value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IReadResult<string>> Append(string id, string value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<string>> Append(string id, string value, AppendOptions options)
+        public Task<IReadResult<string>> Append(string id, string value, AppendOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<string>> Append(string id, string value, Action<AppendOptions> options)
+        public Task<IReadResult<string>> Append(string id, string value, Action<AppendOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<string>> Append(string id, byte[] value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IReadResult<string>> Append(string id, byte[] value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<byte[]>> Append(string id, byte[] value, AppendOptions options)
+        public Task<IReadResult<byte[]>> Append(string id, byte[] value, AppendOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<byte[]>> Append(string id, byte[] value, Action<AppendOptions> options)
+        public Task<IReadResult<byte[]>> Append(string id, byte[] value, Action<AppendOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<byte[]>> Prepend(string id, string value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IReadResult<byte[]>> Prepend(string id, string value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<string>> Prepend(string id, string value, PrependOptions options)
+        public Task<IReadResult<string>> Prepend(string id, string value, PrependOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<string>> Prepend(string id, string value, Action<PrependOptions> options)
+        public Task<IReadResult<string>> Prepend(string id, string value, Action<PrependOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task Unlock<T>(IDocument<T> document, TimeSpan timeSpan = new TimeSpan())
+        public Task Unlock<T>(IReadResult<T> readResult, TimeSpan timeSpan = new TimeSpan())
         {
             throw new NotImplementedException();
         }
 
-        public Task Unlock<T>(IDocument<T> document, UnlockOptions options)
+        public Task Unlock<T>(IReadResult<T> readResult, UnlockOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task Unlock<T>(IDocument<T> document, Action<UnlockOptions> options)
+        public Task Unlock<T>(IReadResult<T> readResult, Action<UnlockOptions> options)
         {
             throw new NotImplementedException();
         }
@@ -418,22 +418,22 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public IMutationOperation Upsert<T>(IDocument<T> document)
+        public IMutationOperation Upsert<T>(IReadResult<T> readResult)
         {
             throw new NotImplementedException();
         }
 
-        public IMutationOperation Insert<T>(IDocument<T> document)
+        public IMutationOperation Insert<T>(IReadResult<T> readResult)
         {
             throw new NotImplementedException();
         }
 
-        public IMutationOperation Replace<T>(IDocument<T> document)
+        public IMutationOperation Replace<T>(IReadResult<T> readResult)
         {
             throw new NotImplementedException();
         }
 
-        public IMutationOperation Remove<T>(IDocument<T> document)
+        public IMutationOperation Remove<T>(IReadResult<T> readResult)
         {
             throw new NotImplementedException();
         }
@@ -467,10 +467,11 @@ namespace Couchbase
             }
         }
 
-        async Task IBucketSender.Send<T>(IOperation<T> op, TaskCompletionSource<IDocument<T>> tcs)
+        async Task IBucketSender.Send<T>(IOperation<T> op, TaskCompletionSource<IReadResult<T>> tcs)
         {
             await this._connection.SendAsync(op.Write(), op.Completed);
             await tcs.Task;
         }
     }
+        */
 }

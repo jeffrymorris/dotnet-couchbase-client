@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Couchbase.Core;
 using Couchbase.Core.IO;
+using Couchbase.Services.Query.Couchbase.N1QL;
 
 namespace Couchbase.Services.Query
 {
@@ -10,7 +10,7 @@ namespace Couchbase.Services.Query
     /// Represents a request for a N1QL query
     /// </summary>
     /// <returns></returns>
-    public interface IQueryRequest
+    public interface IQueryOptions
     {
         /// <summary>
         /// Sets the lifespan of the query request; used to check if the request exceeded the maximum time
@@ -59,7 +59,7 @@ namespace Couchbase.Services.Query
         /// <value>
         /// The maximum server parallelism.
         /// </value>
-        IQueryRequest MaxServerParallelism(int parallelism);
+        IQueryOptions MaxServerParallelism(int parallelism);
 
         /// <summary>
         ///  If set to false, the client will try to perform optimizations
@@ -70,7 +70,7 @@ namespace Couchbase.Services.Query
         /// <remarks>The default is <c>true</c>; the query will executed in an ad-hoc manner,
         ///  without special optomizations.</remarks>
         /// <returns></returns>
-        IQueryRequest AdHoc(bool adHoc);
+        IQueryOptions AdHoc(bool adHoc);
 
         /// <summary>
         ///  Sets a N1QL statement to be executed.
@@ -79,7 +79,7 @@ namespace Couchbase.Services.Query
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
         /// <remarks>If both prepared and statement are present and non-empty, an error is returned.</remarks>
         /// <remarks>Required if prepared not provided.</remarks>
-        IQueryRequest Statement(string statement);
+        IQueryOptions Statement(string statement);
 
         /// <summary>
         ///  Sets a N1QL statement to be executed in an optimized way using the given queryPlan.
@@ -88,7 +88,7 @@ namespace Couchbase.Services.Query
         /// <param name="originalStatement">The original statement (eg. SELECT * FROM default) that the user attempted to optimize</param>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
         /// <remarks>Required if statement not provided, will erase a previous call to <see cref="Statement"/>.</remarks>
-        IQueryRequest Prepared(QueryPlan queryPlan, string originalStatement);
+        IQueryOptions Prepared(QueryPlan queryPlan, string originalStatement);
 
         /// <summary>
         /// Sets the maximum time to spend on the request.
@@ -97,7 +97,7 @@ namespace Couchbase.Services.Query
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
         /// <remarks>Optional - the default is 0ms, which means the request runs for as long as it takes.</remarks>
         /// <remarks>There is also a server wide timeout parameter, and the minimum of that and the request timeout is what gets applied. </remarks>
-        IQueryRequest Timeout(TimeSpan timeOut);
+        IQueryOptions Timeout(TimeSpan timeOut);
 
         /// <summary>
         /// If a GET request, this will always be true otherwise false.
@@ -105,7 +105,7 @@ namespace Couchbase.Services.Query
         /// <param name="readOnly">True for get requests.</param>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
         /// <remarks>Any value set here will be overridden by the type of request sent.</remarks>
-        IQueryRequest ReadOnly(bool readOnly);
+        IQueryOptions ReadOnly(bool readOnly);
 
         /// <summary>
         /// Specifies that metrics should be returned with query results.
@@ -113,7 +113,7 @@ namespace Couchbase.Services.Query
         /// <param name="includeMetrics">True to return query metrics.</param>
         /// <remarks>Optional.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest Metrics(bool includeMetrics);
+        IQueryOptions Metrics(bool includeMetrics);
 
         /// <summary>
         /// Adds a named parameter to the parameters to the statement or prepared statement.
@@ -122,7 +122,7 @@ namespace Couchbase.Services.Query
         /// <param name="value">The value of the parameter.</param>
         /// <remarks>Optional.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest AddNamedParameter(string name, object value);
+        IQueryOptions AddNamedParameter(string name, object value);
 
         /// <summary>
         ///  Adds a collection of named parameters to the parameters to the statement or prepared statement.
@@ -130,7 +130,7 @@ namespace Couchbase.Services.Query
         /// <param name="parameters">A list of <see cref="KeyValuePair{K, V}"/> to be sent.</param>
         /// <remarks>Optional.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest AddNamedParameter(params KeyValuePair<string, object>[] parameters);
+        IQueryOptions AddNamedParameter(params KeyValuePair<string, object>[] parameters);
 
         /// <summary>
         /// Adds a positional parameter to the parameters to the statement or prepared statement.
@@ -138,7 +138,7 @@ namespace Couchbase.Services.Query
         /// <param name="value">The value of the positional parameter.</param>
         /// <remarks>Optional.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest AddPositionalParameter(object value);
+        IQueryOptions AddPositionalParameter(object value);
 
         /// <summary>
         /// Adds a list of positional parameters to the statement or prepared statement.
@@ -146,7 +146,7 @@ namespace Couchbase.Services.Query
         /// <param name="parameters">A list of positional parameters.</param>
         /// <returns></returns>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest AddPositionalParameter(params object[] parameters);
+        IQueryOptions AddPositionalParameter(params object[] parameters);
 
         /// <summary>
         /// Desired format for the query results.
@@ -154,7 +154,7 @@ namespace Couchbase.Services.Query
         /// <param name="format">An <see cref="Format"/> enum.</param>
         /// <remarks>Optional.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest Format(Format format);
+        IQueryOptions Format(Format format);
 
         /// <summary>
         /// Specifies the desired character encoding for the query results.
@@ -162,7 +162,7 @@ namespace Couchbase.Services.Query
         /// <param name="encoding">An <see cref="Encoding"/> enum.</param>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
         /// <remarks>Optional.</remarks>
-        IQueryRequest Encoding(Encoding encoding);
+        IQueryOptions Encoding(Encoding encoding);
 
         /// <summary>
         /// Compression format to use for response data on the wire. Possible values are ZIP, RLE, LZMA, LZO, NONE.
@@ -171,7 +171,7 @@ namespace Couchbase.Services.Query
         /// <remarks>Optional. The default is NONE.</remarks>
         /// <remarks>Values are case-insensitive.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest Compression(Compression compression);
+        IQueryOptions Compression(Compression compression);
 
         /// <summary>
         ///  Includes a header for the results schema in the response.
@@ -180,7 +180,7 @@ namespace Couchbase.Services.Query
         /// <remarks>The default is true.</remarks>
         /// <remarks>Optional.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest Signature(bool includeSignature);
+        IQueryOptions Signature(bool includeSignature);
 
         /// <summary>
         /// Specifies the consistency guarantee/constraint for index scanning.
@@ -189,7 +189,7 @@ namespace Couchbase.Services.Query
         /// <remarks>Optional.</remarks>
         /// <remarks>The default is <see cref="ScanConsistency"/>.NotBounded.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest ScanConsistency(ScanConsistency scanConsistency);
+        IQueryOptions ScanConsistency(ScanConsistency scanConsistency);
 
         /// <summary>
         ///  Specifies the maximum time the client is willing to wait for an index to catch up to the vector timestamp in the request. If an index has to catch up, and the <see cref="ScanWait"/> time is exceed doing so, an error is returned.
@@ -198,7 +198,7 @@ namespace Couchbase.Services.Query
         /// <remarks>Optional.</remarks>
         /// <remarks>Can be supplied with <see cref="ScanConsistency"/> values of RequestPlus, StatementPlus and AtPlus.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest ScanWait(TimeSpan scanWait);
+        IQueryOptions ScanWait(TimeSpan scanWait);
 
         /// <summary>
         /// Pretty print the output.
@@ -207,7 +207,7 @@ namespace Couchbase.Services.Query
         /// <remarks>True by default.</remarks>
         /// <remarks>Optional.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest Pretty(bool pretty);
+        IQueryOptions Pretty(bool pretty);
 
         /// <summary>
         /// Adds a set of credentials to the list of credentials, in the form of user/password
@@ -217,7 +217,7 @@ namespace Couchbase.Services.Query
         /// <param name="isAdmin">True if connecting as an admin.</param>
         /// <remarks>Optional.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest AddCredentials(string username, string password, bool isAdmin);
+        IQueryOptions AddCredentials(string username, string password, bool isAdmin);
 
         /// <summary>
         /// A piece of data supplied by the client that is echoed in the response, if present. N1QL makes no assumptions about the meaning of this data and just logs and echoes it.
@@ -226,14 +226,14 @@ namespace Couchbase.Services.Query
         /// <remarks>Optional.</remarks>
         /// <remarks> Maximum allowed size is 64 characters. A clientContextID longer than 64 characters is cut off at 64 characters.</remarks>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest ClientContextId(string contextId);
+        IQueryOptions ClientContextId(string contextId);
 
         /// <summary>
         /// The base <see cref="Uri"/> used to create the request e.g. http://localhost:8093/query
         /// </summary>
         /// <param name="uri"></param>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest BaseUri(Uri uri);
+        IQueryOptions BaseUri(Uri uri);
 
         /// <summary>
         /// Adds a raw query parameter and value to the query.
@@ -242,7 +242,7 @@ namespace Couchbase.Services.Query
         /// <param name="name">The paramter name.</param>
         /// <param name="value">The parameter value.</param>
         /// <returns>A reference to the current <see cref="IQueryRequest" /> for method chaining.</returns>
-        IQueryRequest RawParameter(string name, object value);
+        IQueryOptions RawParameter(string name, object value);
 
         /// <summary>
         /// Gets the <see cref="Uri"/> for the Query service
@@ -296,7 +296,7 @@ namespace Couchbase.Services.Query
         /// <remarks>Note: <see cref="ScanConsistency"/> will be overwritten to <see cref="N1QL.ScanConsistency.AtPlus"/>.</remarks>
         /// <param name="mutationState">State of the mutation.</param>
         /// <returns>A reference to the current <see cref="IQueryRequest"/> for method chaining.</returns>
-        IQueryRequest ConsistentWith(MutationState mutationState);
+        IQueryOptions ConsistentWith(MutationState mutationState);
 
         /// <summary>
         /// Uses the streaming API for the returned results. This is useful for large result sets in that it limits the
@@ -304,13 +304,13 @@ namespace Couchbase.Services.Query
         /// </summary>
         /// <param name="streaming">if set to <c>true</c> streams the results as you iterate through the response.</param>
         /// <returns></returns>
-        IQueryRequest UseStreaming(bool streaming);
+        IQueryOptions UseStreaming(bool streaming);
 
         /// <summary>
         /// Indicates if a profile section should be requested in the result. Default is <see cref="QueryProfile.Off"/>.
         /// </summary>
         /// <param name="profile">The profile.</param>
         /// <returns></returns>
-        IQueryRequest Profile(QueryProfile profile);
+        IQueryOptions Profile(QueryProfile profile);
     }
 }

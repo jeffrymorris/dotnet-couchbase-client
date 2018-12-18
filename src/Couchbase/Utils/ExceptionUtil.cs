@@ -22,7 +22,7 @@ namespace Couchbase.Utils
         public static string RemoteHostTimeoutMsg =
             "The connection has timed out while an operation was in flight. The current setting for SendTimeout is {0}ms.";
 
-        public static string DocumentMutationLostMsg = "Document Mutation lost during a hard failover.";
+        public static string DocumentMutationLostMsg = "ReadResult Mutation lost during a hard failover.";
 
         public static string NotEnoughReplicasConfigured = "Not enough replicas configured on the bucket.";
 
@@ -30,9 +30,9 @@ namespace Couchbase.Utils
 
         public static string TemporaryLockErrorMsg = "A temporary lock error was detected for key: {0}";
 
-        public static string DocumentExistsMsg = "An existing document was found for key: {0}";
+        public static string DocumentExistsMsg = "An existing readResult was found for key: {0}";
 
-        public static string DocumentNotFoundMsg = "No document found for key: {0}";
+        public static string DocumentNotFoundMsg = "No readResult found for key: {0}";
 
         public static string CasMismatchMsg = "The CAS value has changed for key: {0}";
 
@@ -68,7 +68,7 @@ namespace Couchbase.Utils
         public const string EmptyUriTryingSubmitN1qlQuery = "There was a problem retrieving a valid URI to submit the N1QL query to.";
 
         public const string XAttriburesNotAvailableMessage =
-            "A subdocument operation has been made targeting the XAttributes of a document but the cluster does not support them. " +
+            "A subdocument operation has been made targeting the XAttributes of a readResult but the cluster does not support them. " +
             "Please check all memebrs of the cluster support XAttributes.";
 
         public const string ParameterCannotBeNullOrEmptyFormat = "{0} cannot be null, empty or whitespace.";

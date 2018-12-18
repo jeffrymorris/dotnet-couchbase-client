@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Couchbase
+namespace Couchbase.Services.Analytics
 {
-    public interface IMutationResult
+    public interface IAnalyticsResult
     {
     }
 }

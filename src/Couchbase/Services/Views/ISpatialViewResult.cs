@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Couchbase.Services.Search
+namespace Couchbase.Services.Views
 {
-    public interface ISearchResponse<T>
+    public interface ISpatialViewResult
     {
     }
 }

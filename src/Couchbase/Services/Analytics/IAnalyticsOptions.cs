@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Couchbase.Services.Analytics
 {
-    public interface IAnalyticsRequest
+    public interface IAnalyticsOptions
     {
     }
 }

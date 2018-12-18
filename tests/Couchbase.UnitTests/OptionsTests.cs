@@ -16,6 +16,19 @@ namespace Couchbase.UnitTests
         }
 
         [Fact]
+        public void Test_GetOptions()
+        {
+            using (var op = new OperationTimer(output))
+            {
+                for (int i = 0; i < 10000; i++)
+                {
+                    var option = new MutateOptions().Timeout(new TimeSpan(1, 1, 1)).Upsert("foo", "{bar}")
+                        .CreatePath(true).Insert("baz", new {poo = true});
+                }
+            }
+        }
+
+        [Fact]
         public void Test_InsertOptions()
         {
             using (var op = new OperationTimer(output))

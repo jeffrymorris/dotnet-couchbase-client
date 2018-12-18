@@ -70,7 +70,7 @@ namespace Couchbase.Core.IO.Operations
         /// </summary>
         Helo = 0x1f,
 
-        /* sub document api shinizzle */
+        /* sub readResult api shinizzle */
         SubGet = 0xc5,
         SubExist = 0xc6,
         SubDictAdd = 0xc7,

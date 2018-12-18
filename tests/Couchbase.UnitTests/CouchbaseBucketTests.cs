@@ -1,37 +1,12 @@
-﻿using System;
-using System.Security.Authentication;
-using System.Threading.Tasks;
-using Couchbase.Services.Query.Couchbase.N1QL;
+﻿using System.Threading.Tasks;
 using Xunit;
-
 
 namespace Couchbase.UnitTests
 {
-    public class ClusterTests
+    public class CouchbaseBucketTests
     {
         [Fact]
-        public async Task Authenticate_Does_Not_Throw_Exception()
-        {
-
-            var cluster = new Cluster();
-            await cluster.ConnectAsync(new Configuration
-            {
-                UserName = "Administrator",
-                Password = "password"
-            }).ConfigureAwait(false);
-        }
-
-        [Fact]
-        public async Task Authenticate_Throws_ArgumentNullException_When_Crendentials_Not_Provided()
-        {
-
-            var cluster = new Cluster();
-            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-                await cluster.ConnectAsync(new Configuration()).ConfigureAwait(false));
-        }
-
-        [Fact]
-        public async Task GetBucket_Returns_Bucket()
+        public async Task GetDefaultCollection_Returns_Default_Collection()
         {
             var cluster = new Cluster();
             await cluster.ConnectAsync(new Configuration
@@ -41,11 +16,14 @@ namespace Couchbase.UnitTests
             }).ConfigureAwait(false);
 
             var bucket = cluster.GetBucket("default");
-            Assert.NotNull(bucket);
+            var collection = bucket.GetDefaultCollection();
+
+            Assert.NotNull(collection);
+            Assert.Equal("_default", collection.Name);
         }
 
         [Fact]
-        public async Task Test_Query()
+        public async Task GetScope_Returns_Scope()
         {
             var cluster = new Cluster();
             await cluster.ConnectAsync(new Configuration
@@ -54,9 +32,26 @@ namespace Couchbase.UnitTests
                 Password = "password"
             }).ConfigureAwait(false);
 
-            var result = cluster.Query<dynamic>("SELECT x.* FROM `default` WHERE x.Type=&0",
-                parameter => parameter.Add("poo"), 
-                options => options.Encoding(Encoding.Utf8));
+            var bucket = cluster.GetBucket("default");
+            var scope = bucket.GetScope("app_west");
+
+            Assert.NotNull(scope);
+            Assert.Equal("app_west", scope.Name);
+            Assert.Equal("43", scope.Id);
+        }
+
+        [Fact]
+        public async Task GetScope_Throws_ScopeNotFoundException_When_Scope_Not_Found()
+        {
+            var cluster = new Cluster();
+            await cluster.ConnectAsync(new Configuration
+            {
+                UserName = "Administrator",
+                Password = "password"
+            }).ConfigureAwait(false);
+
+            var bucket = cluster.GetBucket("default");
+            Assert.Throws<ScopeNotFoundException>(()=> bucket.GetScope("xyz"));
         }
     }
 }

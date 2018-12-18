@@ -7,7 +7,7 @@ using Couchbase.Core.IO.Transcoders;
 
 namespace Couchbase.Core.IO.Operations
 {
-    public class Get<T> : IFetchOperation<T>
+    public class Get : IFetchOperation
     {
         const int HeaderLength = 24;
         private IBucket _bucket;
@@ -17,40 +17,40 @@ namespace Couchbase.Core.IO.Operations
             _bucket = bucket;
         }
 
-        public IFetchOperation<T> WithExpiry(TimeSpan expiry)
+        public IFetchOperation WithExpiry(TimeSpan expiry)
         {
             throw new NotImplementedException();
         }
 
-        public IFetchOperation<T> WithTimeout(TimeSpan timeout)
+        public IFetchOperation WithTimeout(TimeSpan timeout)
         {
             throw new NotImplementedException();
         }
 
-        public IFetchOperation<T> WithCas(uint cas)
+        public IFetchOperation WithCas(uint cas)
         {
             throw new NotImplementedException();
         }
 
-        public IFetchOperation<T> WithDurability(PersistTo peristTo, ReplicateTo replicateTo)
+        public IFetchOperation WithDurability(PersistTo peristTo, ReplicateTo replicateTo)
         {
             throw new NotImplementedException();
         }
 
-        public IFetchOperation<T> WithTranscoder(ITranscoder transcoder)
+        public IFetchOperation WithTranscoder(ITranscoder transcoder)
         {
             throw new NotImplementedException();
         }
 
 
-        public IFetchOperation<T> WithSerializer(ITypeSerializer serializer)
+        public IFetchOperation WithSerializer(ITypeSerializer serializer)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IDocument<T>> ExecuteAsync()
+        public Task<IDocument> ExecuteAsync()
         {
-            var tcs = new TaskCompletionSource<IDocument<T>>();
+            var tcs = new TaskCompletionSource<IDocument>();
             Completed = s =>
             {
                 //Status will be Success if bucket select was bueno
@@ -58,7 +58,7 @@ namespace Couchbase.Core.IO.Operations
                 tcs.SetResult(null);
                 return tcs.Task;
             };
-            (_bucket as IBucketSender).Send(this, tcs);
+            //(_bucket as IBucketSender).Send(this, tcs);
             return tcs.Task;
         }
 

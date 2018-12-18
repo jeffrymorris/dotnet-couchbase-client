@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Couchbase.Services.Search
 {
-    public interface ISearchRequest
+    public interface ISearchOptions
     {
     }
 }

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Couchbase.Services.Analytics
+namespace Couchbase
 {
-    public interface IAnalyticsResponse<T>
+    public interface IQueryResult
     {
     }
 }
