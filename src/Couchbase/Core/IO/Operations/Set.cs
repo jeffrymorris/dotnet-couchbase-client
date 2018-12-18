@@ -11,10 +11,10 @@ namespace Couchbase.Core.IO.Operations
     {
         const int HeaderLength = 24;
         private IBucket _bucket;
-        private IDocument<T> _document;
+        private IDocument _document;
         private uint _expiry;
 
-        public Set(IBucket bucket, IDocument<T> document)
+        public Set(IBucket bucket, IDocument document)
         {
             _bucket = bucket;
             _document = document;
@@ -42,7 +42,7 @@ namespace Couchbase.Core.IO.Operations
 
         public Task ExecuteAsync()
         {
-            var tcs = new TaskCompletionSource<IDocument<T>>();
+            var tcs = new TaskCompletionSource<IDocument>();
             Completed = s =>
             {
                 //Status will be Success if bucket select was bueno
@@ -50,7 +50,7 @@ namespace Couchbase.Core.IO.Operations
                 tcs.SetResult(null);
                 return tcs.Task;
             };
-            (_bucket as IBucketSender).Send(this, tcs);
+            //(_bucket as IBucketSender).Send(this, tcs);
             return tcs.Task;
         }
 

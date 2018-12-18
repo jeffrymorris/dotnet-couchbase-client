@@ -6,5 +6,7 @@ namespace Couchbase.Core.IO.Operations.Temp
         IHeader Header { get; set; }
 
         IBody Body { get; set; }
+
+        IOperationResponse GetResponse();
     }
 }
