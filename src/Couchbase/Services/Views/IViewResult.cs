@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Couchbase.Services.Analytics
+namespace Couchbase.Services.Views
 {
-    public interface IAnalyticsRequest
+    public interface IViewResult
     {
     }
 }
