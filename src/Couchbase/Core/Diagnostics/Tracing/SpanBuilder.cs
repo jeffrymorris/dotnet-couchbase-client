@@ -119,12 +119,12 @@ namespace Couchbase.Core.Diagnostics.Tracing
             return this;
         }
 
-        public IScope StartActive()
+        public OpenTracing.IScope StartActive()
         {
             return StartActive(true);
         }
 
-        public IScope StartActive(bool finishSpanOnDispose)
+        public OpenTracing.IScope StartActive(bool finishSpanOnDispose)
         {
             var span = Start();
             return _tracer.ScopeManager.Activate(span, finishSpanOnDispose);
