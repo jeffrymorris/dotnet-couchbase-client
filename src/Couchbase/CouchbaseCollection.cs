@@ -7,15 +7,18 @@ namespace Couchbase
     {
         internal const string DefaultCollection = "_default";
 
-        public CouchbaseCollection(IBucket bucket, string cid, string name)
+        public CouchbaseCollection(IBucket bucket, string cid, string name, IBinaryCollection binaryCollection =null)
         {
             Cid = cid;
             Name = name;
+            Binary = binaryCollection;
         }
 
         public string Cid { get; }
 
         public string Name { get; }
+
+        public IBinaryCollection Binary { get; }
 
         public Task<Optional<IGetResult>> Get(string id, TimeSpan timeSpan = new TimeSpan())
         {

@@ -3,14 +3,8 @@ using System.Threading.Tasks;
 
 namespace Couchbase
 {
-    public interface ICollection
-    {      
-        string Cid { get; }
-
-        string Name { get; }
-
-        IBinaryCollection Binary { get; }
-
+    public interface IBinaryCollection
+    {
         #region GET
 
         Task<Optional<IGetResult>> Get(string id, TimeSpan timeSpan = new TimeSpan());
@@ -72,6 +66,58 @@ namespace Couchbase
 
         #endregion
 
+        #region Append
+
+        Task<IStoreResult> Append(string id, string value, 
+            TimeSpan timeSpan = new TimeSpan(),
+            TimeSpan expiration = new TimeSpan(),
+            uint cas = 0);
+
+        Task<IStoreResult> Append(string id, string value, AppendOptions options);
+
+        Task<IStoreResult> Append(string id, string value, Action<AppendOptions> options);
+
+        #endregion
+
+        #region Prepend
+
+        Task<IStoreResult> Prepend(string id, string value,  
+            TimeSpan timeSpan = new TimeSpan(),
+            TimeSpan expiration = new TimeSpan(),
+            uint cas = 0);
+
+        Task<IStoreResult> Prepend(string id, string value, PrependOptions options);
+
+        Task<IStoreResult> Prepend(string id, string value, Action<PrependOptions> options);
+
+        #endregion
+
+        #region INCR & DECR
+
+        Task<IStoreResult> Increment(string id,
+            ulong delta,
+            ulong initial,
+            TimeSpan timeout = new TimeSpan(), 
+            TimeSpan expiration = new TimeSpan(),
+            uint cas = 0);
+
+        Task<IStoreResult> Increment(string id, IncrementOptions options);
+
+        Task<IStoreResult> Increment(string id, Action<IncrementOptions> options);
+
+        Task<IStoreResult> Decrement(string id,
+            ulong delta,
+            ulong initial,
+            TimeSpan timeout = new TimeSpan(), 
+            TimeSpan expiration = new TimeSpan(),
+            uint cas = 0);
+
+        Task<IStoreResult> Decrement(string id, IncrementOptions options);
+
+        Task<IStoreResult> Decrement(string id, Action<IncrementOptions> options);
+
+        #endregion
+
         #region Unlock
 
         Task Unlock<T>(int id, TimeSpan timeSpan = new TimeSpan());
@@ -91,17 +137,5 @@ namespace Couchbase
         Task Touch(string id, Action<GetAndTouchOptions> options);
 
         #endregion
-
-        #region Sub ReadResult
-
-        Task<IStoreResult> MutateIn(string id, MutateOptions options = default(MutateOptions));
-
-        Task<IStoreResult> MutateIn(string id, Action<MutateOptions> options = null);
-
-        #endregion
-        
-        Task<ILookupInResult> LookupIn(string id, LookupInOptions options = default(LookupInOptions));
-
-        Task<ILookupInResult> LookupIn(string id, Action<LookupInOptions> options = default(Action<LookupInOptions>)); 
-    } 
+    }
 }
