@@ -40,7 +40,7 @@ namespace Couchbase.UnitTests
                 Password = "password"
             }).ConfigureAwait(false);
 
-            var bucket = cluster.GetBucket("default");
+            var bucket = cluster.Bucket("default");
             Assert.NotNull(bucket);
         }
 

@@ -1,19 +1,24 @@
 ﻿    using System;
 using System.Threading.Tasks;
+    using Couchbase.Services.Views;
 
 namespace Couchbase
 {
-    public interface IBucket
+    public interface IBucket : IDisposable
     {
         string Name { get; }
 
         Task BootstrapAsync(Uri uri);
 
-        IScope this[string name] { get; }
+        Task<IScope> this[string name] { get; }
 
-        ICollection GetDefaultCollection();
+        Task<ICollection> DefaultCollection { get; }
 
-        IScope GetScope(string name);
+        Task<IScope> Scope(string name);
+
+        Task<IViewResult> ViewQuery<T>(string statement, IViewOptions options);
+
+        Task<ISpatialViewResult> SpatialViewQuery<T>(string statement, ISpatialViewOptions options);
 
         [Obsolete("Temp solution until server supports getting a manifest.")]
         void LoadManifest(string path);

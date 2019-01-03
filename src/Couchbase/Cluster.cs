@@ -7,7 +7,6 @@ using Couchbase.Management;
 using Couchbase.Services.Analytics;
 using Couchbase.Services.Query;
 using Couchbase.Services.Search;
-using Couchbase.Services.Views;
 
 namespace Couchbase
 {
@@ -20,7 +19,57 @@ namespace Couchbase
         {
         }
 
-        public IConfiguration Configuration => _configuration;
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IBucket> this[string name] => throw new NotImplementedException();
+
+        public Task<IBucket> Bucket(string name)
+        {
+            if (_bucketRefs.TryGetValue(name, out IBucket bucket))
+            {
+                return Task.FromResult(bucket);
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(name), "Bucket not found!");
+        }
+
+        public Task<IDiagnosticsReport> Diagnostics()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IDiagnosticsReport> Diagnostics(string reportId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IClusterManager> ClusterManager()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IQueryResult<T>> Query<T>(string statement, QueryParameter parameters = null, IQueryOptions options = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IQueryResult<T>> Query<T>(string statement, Action<QueryParameter> parameters = null, Action<IQueryOptions> options = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IAnalyticsResult> AnalyticsQuery<T>(string statement, IAnalyticsOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ISearchResult> SearchQuery<T>(ISearchQuery query, ISearchOptions options)
+        {
+            throw new NotImplementedException();
+        }
 
         public async Task ConnectAsync(IConfiguration config)
         {
@@ -54,72 +103,6 @@ namespace Couchbase
                     }
                 }
             }
-        }
-
-        Task<IBucket> ICluster.GetBucket(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IDiagnosticsReport> Diagnostics()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IDiagnosticsReport> Diagnostics(string reportId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IClusterManager> ClusterManager()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IQueryResult> Query<T>(string statement, QueryParameter parameters = null, IQueryOptions options = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IQueryResult> Query<T>(string statement, Action<QueryParameter> parameters = null, Action<IQueryOptions> options = null)
-        {
-            var queryParams = new QueryParameter();
-            parameters?.Invoke(queryParams);
-
-   
-
-            throw new NotImplementedException();
-        }
-
-
-        public Task<IAnalyticsResult> AnalyzeQuery<T>(string statement, IAnalyticsOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ISearchResult> SearchQuery<T>(string statement, ISearchOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IViewResult> ViewQuery<T>(string statement, IViewOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ISpatialViewResult> SpatialViewQuery<T>(string statement, ISpatialViewOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IBucket GetBucket(string name)
-        {
-            if (_bucketRefs.TryGetValue(name, out IBucket bucket))
-            {
-                return bucket;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(name), "Bucket not found!");
         }
     }
 }
