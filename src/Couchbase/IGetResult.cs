@@ -15,5 +15,4 @@ namespace Couchbase
 
         T ContentAs<T>(ITypeSerializer serializer);
     }
-
 }

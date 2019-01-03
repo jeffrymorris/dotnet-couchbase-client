@@ -16,11 +16,11 @@ namespace Couchbase.UnitTests
             var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default", mockBinaryCollection.Object);
 
             var binaryCollection = collection.Binary;
-            var result = binaryCollection.Get("id");
+            var result = binaryCollection.Increment("someid");
 
             //or
 
-            var result1 = collection.Binary.Get("id");
+            var result1 = collection.Binary.Increment("someid");
         }
     }
 }

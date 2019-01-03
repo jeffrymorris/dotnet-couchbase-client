@@ -12,7 +12,6 @@ namespace Couchbase.IntegrationTests
         {
             var ip = "http://10.142.161.102:8091";
             var cluster = new Cluster();
-            cluster.ConnectAsync(new Configuration().WithServers(ip).WithBucket("bucket1"));
         }
     }
 }

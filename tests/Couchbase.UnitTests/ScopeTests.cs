@@ -15,8 +15,8 @@ namespace Couchbase.UnitTests
                 Password = "password"
             }).ConfigureAwait(false);
 
-            var bucket = cluster.GetBucket("default");
-            var scope = bucket.GetScope("app_west");
+            var bucket = await cluster.Bucket("default");
+            var scope = await bucket.Scope("app_west");
             var collection = scope.GetCollection("users");
 
             Assert.NotNull(collection);
@@ -33,8 +33,8 @@ namespace Couchbase.UnitTests
                 Password = "password"
             }).ConfigureAwait(false);
 
-            var bucket = cluster.GetBucket("default");
-            var scope = bucket.GetScope("app_west");
+            var bucket = await cluster.Bucket("default");
+            var scope = await bucket.Scope("app_west");
            
             Assert.Throws<CollectionNotFoundException>(()=> scope.GetCollection("xyz"));
         }

@@ -9,13 +9,13 @@ using Couchbase.Services.Views;
 
 namespace Couchbase
 {
-    public interface ICluster
+    public interface ICluster : IDisposable
     {
-        IConfiguration Configuration { get; }
-
         Task ConnectAsync(IConfiguration config);
 
-        Task<IBucket> GetBucket(string name);
+        Task<IBucket> this[string name] { get; }
+
+        Task<IBucket> Bucket(string name);
 
         Task<IDiagnosticsReport> Diagnostics();
 
@@ -23,16 +23,12 @@ namespace Couchbase
 
         Task<IClusterManager> ClusterManager();
 
-        Task<IQueryResult> Query<T>(string statement, QueryParameter parameters = null, IQueryOptions options = null);
+        Task<IQueryResult<T>> Query<T>(string statement, QueryParameter parameters = null, IQueryOptions options = null);
 
-        Task<IQueryResult> Query<T>(string statement, Action<QueryParameter> parameters = null,  Action<IQueryOptions> options = null);
+        Task<IQueryResult<T>> Query<T>(string statement, Action<QueryParameter> parameters = null,  Action<IQueryOptions> options = null);
 
-        Task<IAnalyticsResult> AnalyzeQuery<T>(string statement, IAnalyticsOptions options);
+        Task<IAnalyticsResult> AnalyticsQuery<T>(string statement, IAnalyticsOptions options);
 
-        Task<ISearchResult> SearchQuery<T>(string statement, ISearchOptions options);
-
-        Task<IViewResult> ViewQuery<T>(string statement, IViewOptions options);
-
-        Task<ISpatialViewResult> SpatialViewQuery<T>(string statement, ISpatialViewOptions options);
+        Task<ISearchResult> SearchQuery<T>(ISearchQuery query, ISearchOptions options);
     }
 }

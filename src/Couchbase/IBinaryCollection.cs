@@ -101,7 +101,7 @@ namespace Couchbase
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0);
 
-        Task<IStoreResult> Increment(string id, IncrementOptions options);
+        Task<IStoreResult> Increment(string id, IncrementOptions options = null);
 
         Task<IStoreResult> Increment(string id, Action<IncrementOptions> options);
 
