@@ -71,6 +71,7 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
+        [Obsolete("Temp")]
         public async Task ConnectAsync(IConfiguration config)
         {
             if (string.IsNullOrWhiteSpace(config.Password) || string.IsNullOrWhiteSpace(config.UserName))
