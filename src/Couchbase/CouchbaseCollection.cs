@@ -99,54 +99,6 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Counter(string id, ulong delta, ulong initial, TimeSpan timeout = new TimeSpan(),
-            TimeSpan expiration = new TimeSpan(), uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStoreResult> Counter(string id, IncrementOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStoreResult> Counter(string id, Action<IncrementOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStoreResult> Append(string id, string value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
-            uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStoreResult> Append(string id, string value, AppendOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStoreResult> Append(string id, string value, Action<AppendOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStoreResult> Prepend(string id, string value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
-            uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStoreResult> Prepend(string id, string value, PrependOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStoreResult> Prepend(string id, string value, Action<PrependOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task Unlock<T>(int id, TimeSpan timeSpan = new TimeSpan())
         {
             throw new NotImplementedException();
@@ -177,22 +129,22 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> MutateIn(string id, MutateOptions options = default(MutateOptions))
+        public Task<IStoreResult> MutateIn(string id, MutateInOps ops, MutateInOptions options = default(MutateInOptions))
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> MutateIn(string id, Action<MutateOptions> options = null)
+        public Task<IStoreResult> MutateIn(string id, Action<MutateInOps> ops, Action<MutateInOptions> options = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ILookupInResult> LookupIn(string id, LookupInOptions options = default(LookupInOptions))
+        public Task<ILookupInResult> LookupIn(string id, LookupInOps ops, LookupInOptions options = default(LookupInOptions))
         {
             throw new NotImplementedException();
         }
 
-        public Task<ILookupInResult> LookupIn(string id, Action<LookupInOptions> options = default(Action<LookupInOptions>))
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInOps> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>))
         {
             throw new NotImplementedException();
         }

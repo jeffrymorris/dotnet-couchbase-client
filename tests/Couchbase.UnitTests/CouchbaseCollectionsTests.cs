@@ -51,10 +51,9 @@ namespace Couchbase.UnitTests
 
             //3) replace the fragment in the original readResult - NOTE: ArrayAppend on the server is better
             var mutateResults = await collection.MutateIn("key1",
-                options =>
+                ops =>
                 {
-                    options.CreatePath(true);
-                    options.Replace("legs", items);
+                    ops.Replace("legs", items);
                 });
 
             Assert.True(mutateResults.Cas > 0);
@@ -104,7 +103,10 @@ namespace Couchbase.UnitTests
 
                     // 3) replace the readResult on the server
                     var mutateResults = await collection.Replace(result.Value.Id, (object) person,
-                        options => { options.Timeout = new TimeSpan(0, 0, 1); });
+                        options =>
+                        {
+                            options.Timeout = new TimeSpan(0, 0, 1);
+                        });
                 }
                 catch (KeyValueException e)
                 {
@@ -167,11 +169,14 @@ namespace Couchbase.UnitTests
 
             // 3) replace the readResult on the server
             var mutateResults = await collection.MutateIn("key1",
+                ops =>
+                {
+                    ops.Replace("age", person.Age);
+                    ops.Replace("arms", person.Arms);
+                },
                 options =>
                 {
                     options.Timeout(new TimeSpan(0, 0, 1));
-                    options.Replace("age", person.Age);
-                    options.Replace("arms", person.Arms);
                 });
 
             Assert.True(mutateResults.Cas > 0);
@@ -183,10 +188,10 @@ namespace Couchbase.UnitTests
             var mockBucket = new Mock<IBucket>();
             var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
 
-                var result = await collection.Get("key2",
-                    new GetOptions().
-                        WithTimeout(new TimeSpan(0, 0, 0, 5)).
-                        Project("age", "arms", "poo", "bar"));
+            var result = await collection.Get("key2",
+                new GetOptions().
+                    WithTimeout(new TimeSpan(0, 0, 0, 5)).
+                    Project("age", "arms", "poo", "bar"));
 
             // 2) Make a modification to the content
             var person = result.Value.ContentAs<Person>();
@@ -194,15 +199,29 @@ namespace Couchbase.UnitTests
             person.Arms = new List<int> {1};
 
             // 3) replace the readResult on the server
-            var mutateResults = await collection.MutateIn("key1",
-                options =>
+            var mutateResults = await collection.MutateIn("key1", ops =>
                 {
-                    options.Timeout(new TimeSpan(0, 0, 1));
-                    options.Replace("age", person.Age);
-                    options.Replace("arms", person.Arms);
-                });
+                    ops.Replace("age", person.Age);
+                    ops.Replace("arms", person.Arms);
+                },
+                options => { options.Timeout(new TimeSpan(0, 0, 1)); });
 
             Assert.True(mutateResults.Cas > 0);
+        }
+
+        [Fact]
+        public async Task MutateIn_Test()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
+
+            var result = await collection.MutateIn("L33T", ops =>
+            {
+                ops.Insert("thepath2", SubdocPathFlags.CreatePath | SubdocPathFlags.Xattr);
+                ops.Insert("thepath", 22, true, true);
+                ops.Upsert("anotherpath", "eww");
+                ops.ArrayAppend("anarray", new object[] {"a", 3, "c"}, true);
+            }, options => options.Timeout(milliseconds:20));
         }
     }
 }
