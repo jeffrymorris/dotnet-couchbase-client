@@ -35,50 +35,50 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Upsert<T>(string id, T content, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IMutationResult> Upsert<T>(string id, T content, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Upsert<T>(string id, T content, UpsertOptions options)
+        public Task<IMutationResult> Upsert<T>(string id, T content, UpsertOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Upsert<T>(string id, T content, Action<UpsertOptions> options)
+        public Task<IMutationResult> Upsert<T>(string id, T content, Action<UpsertOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Insert<T>(string id, T content, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IMutationResult> Insert<T>(string id, T content, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Insert<T>(string id, T content, InsertOptions options)
+        public Task<IMutationResult> Insert<T>(string id, T content, InsertOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Insert<T>(string id, T content, Action<InsertOptions> options)
+        public Task<IMutationResult> Insert<T>(string id, T content, Action<InsertOptions> options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Replace<T>(string id, T content, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
+        public Task<IMutationResult> Replace<T>(string id, T content, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
             uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Replace<T>(string id, T content, ReplaceOptions options)
+        public Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> Replace<T>(string id, T content, Action<ReplaceOptions> options)
+        public Task<IMutationResult> Replace<T>(string id, T content, Action<ReplaceOptions> options)
         {
             throw new NotImplementedException();
         }
@@ -129,12 +129,12 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> MutateIn(string id, MutateInOps ops, MutateInOptions options = default(MutateInOptions))
+        public Task<IMutationResult> MutateIn(string id, MutateInOps ops, MutateInOptions options = default(MutateInOptions))
         {
             throw new NotImplementedException();
         }
 
-        public Task<IStoreResult> MutateIn(string id, Action<MutateInOps> ops, Action<MutateInOptions> options = null)
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInOps> ops, Action<MutateInOptions> options = null)
         {
             throw new NotImplementedException();
         }

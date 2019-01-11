@@ -1,4 +1,5 @@
 ﻿
+using System;
 using Couchbase.Core.IO.Errors;
 using Couchbase.Core.IO.Operations;
 
@@ -11,5 +12,7 @@ namespace Couchbase
         ResponseStatus Status { get; }
 
         ErrorCode Error(); //from enhanced error handling
+
+        TimeSpan? Expiration { get; }
     }
 }

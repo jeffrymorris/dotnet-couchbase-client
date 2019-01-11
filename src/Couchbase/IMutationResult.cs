@@ -3,10 +3,8 @@ using Couchbase.Core;
 
 namespace Couchbase
 {
-    public interface IStoreResult
+    public interface IMutationResult : IResult
     {
-        ulong Cas { get; }
-
         MutationToken MutationToken { get; set; }
     }
 }
