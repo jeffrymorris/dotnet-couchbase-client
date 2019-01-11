@@ -23,38 +23,38 @@ namespace Couchbase
 
         #region SET
 
-        Task<IStoreResult> Upsert<T>(string id, T content,
+        Task<IMutationResult> Upsert<T>(string id, T content,
             TimeSpan timeSpan = new TimeSpan(),
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
             ReplicateTo replicateTo = ReplicateTo.Zero);
 
-        Task<IStoreResult> Upsert<T>(string id, T content, UpsertOptions options);
+        Task<IMutationResult> Upsert<T>(string id, T content, UpsertOptions options);
 
-        Task<IStoreResult> Upsert<T>(string id, T content, Action<UpsertOptions> options);
+        Task<IMutationResult> Upsert<T>(string id, T content, Action<UpsertOptions> options);
 
-        Task<IStoreResult> Insert<T>(string id, T content, 
+        Task<IMutationResult> Insert<T>(string id, T content, 
             TimeSpan timeSpan = new TimeSpan(),     
             TimeSpan expiration = new TimeSpan(), 
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
             ReplicateTo replicateTo = ReplicateTo.Zero);
 
-        Task<IStoreResult> Insert<T>(string id, T content, InsertOptions options);
+        Task<IMutationResult> Insert<T>(string id, T content, InsertOptions options);
 
-        Task<IStoreResult> Insert<T>(string id, T content, Action<InsertOptions> options);
+        Task<IMutationResult> Insert<T>(string id, T content, Action<InsertOptions> options);
 
-        Task<IStoreResult> Replace<T>(string id, T content, 
+        Task<IMutationResult> Replace<T>(string id, T content, 
             TimeSpan timeSpan = new TimeSpan(), 
             TimeSpan expiration = new TimeSpan(), 
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
             ReplicateTo replicateTo = ReplicateTo.Zero);
 
-        Task<IStoreResult> Replace<T>(string id, T content, ReplaceOptions options);
+        Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options);
 
-        Task<IStoreResult> Replace<T>(string id, T content, Action<ReplaceOptions> options);
+        Task<IMutationResult> Replace<T>(string id, T content, Action<ReplaceOptions> options);
 
         #endregion
 
@@ -94,9 +94,9 @@ namespace Couchbase
 
         #region Sub ReadResult
 
-        Task<IStoreResult> MutateIn(string id, MutateInOps ops, MutateInOptions options = default(MutateInOptions));
+        Task<IMutationResult> MutateIn(string id, MutateInOps ops, MutateInOptions options = default(MutateInOptions));
 
-        Task<IStoreResult> MutateIn(string id, Action<MutateInOps> ops, Action<MutateInOptions> options = null);
+        Task<IMutationResult> MutateIn(string id, Action<MutateInOps> ops, Action<MutateInOptions> options = null);
 
         #endregion
         

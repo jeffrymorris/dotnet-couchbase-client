@@ -1,8 +1,8 @@
 ﻿
 namespace Couchbase
 {
-    public interface ICounterResult : IStoreResult
+    public interface ICounterResult : IMutationResult
     {
-        ulong Value { get; set; }
+        ulong Content { get; set; }
     }
 }

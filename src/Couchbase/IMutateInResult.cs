@@ -1,7 +1,7 @@
 ﻿
 namespace Couchbase
 {
-    public interface IMutateInResult : IStoreResult
+    public interface IMutateInResult : IMutationResult
     {
         T ContentAs<T>(int index);
     }

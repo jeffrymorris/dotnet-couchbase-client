@@ -18,7 +18,7 @@ namespace Couchbase.Services.Query
         /// </summary>
         /// <param name="mutationResults">The mutationResults.</param>
         /// <returns></returns>
-        public static MutationState From(params IStoreResult[] mutationResults)
+        public static MutationState From(params IMutationResult[] mutationResults)
         {
             return new MutationState().Add(mutationResults);
         }
@@ -39,7 +39,7 @@ namespace Couchbase.Services.Query
         /// <param name="mutationResults">The mutationResults.</param>
         /// <exception cref="ArgumentException">If a <see cref="IGetResult{T}"/> does not contain a valid <see cref="MutationToken"/>.</exception>
         /// <returns>The <see cref="MutationState"/> object itself.</returns>
-        public MutationState Add(params IStoreResult[] mutationResults)
+        public MutationState Add(params IMutationResult[] mutationResults)
         {
             foreach (var document in mutationResults)
             {

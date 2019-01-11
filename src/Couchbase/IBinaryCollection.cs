@@ -17,38 +17,38 @@ namespace Couchbase
 
         #region SET
 
-        Task<IStoreResult> Upsert<T>(string id, T content,
+        Task<IMutationResult> Upsert<T>(string id, T content,
             TimeSpan timeSpan = new TimeSpan(),
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
             ReplicateTo replicateTo = ReplicateTo.Zero);
 
-        Task<IStoreResult> Upsert<T>(string id, T content, UpsertOptions options);
+        Task<IMutationResult> Upsert<T>(string id, T content, UpsertOptions options);
 
-        Task<IStoreResult> Upsert<T>(string id, T content, Action<UpsertOptions> options);
+        Task<IMutationResult> Upsert<T>(string id, T content, Action<UpsertOptions> options);
 
-        Task<IStoreResult> Insert<T>(string id, T content, 
+        Task<IMutationResult> Insert<T>(string id, T content, 
             TimeSpan timeSpan = new TimeSpan(),     
             TimeSpan expiration = new TimeSpan(), 
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
             ReplicateTo replicateTo = ReplicateTo.Zero);
 
-        Task<IStoreResult> Insert<T>(string id, T content, InsertOptions options);
+        Task<IMutationResult> Insert<T>(string id, T content, InsertOptions options);
 
-        Task<IStoreResult> Insert<T>(string id, T content, Action<InsertOptions> options);
+        Task<IMutationResult> Insert<T>(string id, T content, Action<InsertOptions> options);
 
-        Task<IStoreResult> Replace<T>(string id, T content, 
+        Task<IMutationResult> Replace<T>(string id, T content, 
             TimeSpan timeSpan = new TimeSpan(), 
             TimeSpan expiration = new TimeSpan(), 
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
             ReplicateTo replicateTo = ReplicateTo.Zero);
 
-        Task<IStoreResult> Replace<T>(string id, T content, ReplaceOptions options);
+        Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options);
 
-        Task<IStoreResult> Replace<T>(string id, T content, Action<ReplaceOptions> options);
+        Task<IMutationResult> Replace<T>(string id, T content, Action<ReplaceOptions> options);
 
         #endregion
 
@@ -68,53 +68,53 @@ namespace Couchbase
 
         #region Append
 
-        Task<IStoreResult> Append(string id, string value, 
+        Task<IMutationResult> Append(string id, string value, 
             TimeSpan timeSpan = new TimeSpan(),
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0);
 
-        Task<IStoreResult> Append(string id, string value, AppendOptions options);
+        Task<IMutationResult> Append(string id, string value, AppendOptions options);
 
-        Task<IStoreResult> Append(string id, string value, Action<AppendOptions> options);
+        Task<IMutationResult> Append(string id, string value, Action<AppendOptions> options);
 
         #endregion
 
         #region Prepend
 
-        Task<IStoreResult> Prepend(string id, string value,  
+        Task<IMutationResult> Prepend(string id, string value,  
             TimeSpan timeSpan = new TimeSpan(),
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0);
 
-        Task<IStoreResult> Prepend(string id, string value, PrependOptions options);
+        Task<IMutationResult> Prepend(string id, string value, PrependOptions options);
 
-        Task<IStoreResult> Prepend(string id, string value, Action<PrependOptions> options);
+        Task<IMutationResult> Prepend(string id, string value, Action<PrependOptions> options);
 
         #endregion
 
         #region INCR & DECR
 
-        Task<IStoreResult> Increment(string id,
+        Task<IMutationResult> Increment(string id,
             ulong delta,
             ulong initial,
             TimeSpan timeout = new TimeSpan(), 
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0);
 
-        Task<IStoreResult> Increment(string id, IncrementOptions options = null);
+        Task<IMutationResult> Increment(string id, IncrementOptions options = null);
 
-        Task<IStoreResult> Increment(string id, Action<IncrementOptions> options);
+        Task<IMutationResult> Increment(string id, Action<IncrementOptions> options);
 
-        Task<IStoreResult> Decrement(string id,
+        Task<IMutationResult> Decrement(string id,
             ulong delta,
             ulong initial,
             TimeSpan timeout = new TimeSpan(), 
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0);
 
-        Task<IStoreResult> Decrement(string id, IncrementOptions options);
+        Task<IMutationResult> Decrement(string id, IncrementOptions options);
 
-        Task<IStoreResult> Decrement(string id, Action<IncrementOptions> options);
+        Task<IMutationResult> Decrement(string id, Action<IncrementOptions> options);
 
         #endregion
 
