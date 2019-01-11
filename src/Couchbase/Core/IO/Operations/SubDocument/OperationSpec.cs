@@ -8,11 +8,6 @@ namespace Couchbase.Core.IO.Operations.SubDocument
     /// </summary>
     internal class OperationSpec : IEqualityComparer
     {
-        public OperationSpec()
-        {
-            Status = ResponseStatus.None;
-        }
-
         /// <summary>
         /// Gets or sets the N1QL path within the document.
         /// </summary>
@@ -22,12 +17,12 @@ namespace Couchbase.Core.IO.Operations.SubDocument
         public string Path { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="OperationCode"/> for the SubDocument operation.
+        /// Gets or sets the <see cref="OpCode"/> for the SubDocument operation.
         /// </summary>
         /// <value>
         /// The op code.
         /// </value>
-       // public OperationCode OpCode { get; set; }
+        public OpCode OpCode { get; set; }
 
         /// <summary>
         /// Gets or sets the value that will be written or recieved. This can be a JSON fragment or a scalar.
@@ -45,7 +40,7 @@ namespace Couchbase.Core.IO.Operations.SubDocument
         /// </value>
         public byte[] Bytes { get; set; }
 
-       /* /// <summary>
+        /// <summary>
         /// Gets or sets the path flags for the operation.
         /// </summary>
         /// <value>
@@ -59,7 +54,7 @@ namespace Couchbase.Core.IO.Operations.SubDocument
         /// <value>
         /// The flags.
         /// </value>
-        public SubdocDocFlags DocFlags { get; set; }*/
+        public SubdocDocFlags DocFlags { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ResponseStatus"/> returned by the server indicating the status of the operation - i.e. failed, succeeded, etc.
@@ -67,7 +62,7 @@ namespace Couchbase.Core.IO.Operations.SubDocument
         /// <value>
         /// The status.
         /// </value>
-        public ResponseStatus Status { get; set; }
+        public ResponseStatus Status { get; set; } = ResponseStatus.None;
 
         /// <summary>
         /// Gets or sets a value indicating whether or not to remove array brackets.
@@ -97,9 +92,9 @@ namespace Couchbase.Core.IO.Operations.SubDocument
             return new OperationSpec
             {
                 Bytes = null,
-                //PathFlags = PathFlags,
-                //DocFlags = DocFlags,
-                //OpCode = OpCode,
+                PathFlags = PathFlags,
+                DocFlags = DocFlags,
+                OpCode = OpCode,
                 Path = Path,
                 RemoveBrackets = RemoveBrackets,
                 Status = ResponseStatus.None,
@@ -116,12 +111,11 @@ namespace Couchbase.Core.IO.Operations.SubDocument
         /// </returns>
         public override bool Equals(object obj)
         {
-            var spec = obj as OperationSpec;
-            if (spec == null) return false;
-            return Path == spec.Path;// &&
-                   //OpCode == spec.OpCode;// &&
-                  // PathFlags == spec.PathFlags &&
-                  // DocFlags == spec.DocFlags;
+            if (!(obj is OperationSpec spec)) return false;
+            return Path == spec.Path &&
+                   OpCode == spec.OpCode &&
+                   PathFlags == spec.PathFlags &&
+                   DocFlags == spec.DocFlags;
         }
 
         /// <summary>
@@ -134,13 +128,11 @@ namespace Couchbase.Core.IO.Operations.SubDocument
         /// </returns>
         public new bool Equals(object x, object y)
         {
-            var spec1 = x as OperationSpec;
-            var spec2 = y as OperationSpec;
-            if (spec1 == null || spec2 == null) return false;
-            return spec1.Path == spec2.Path;// &&
-                   //spec1.OpCode == spec2.OpCode;// &&
-                   //spec1.PathFlags == spec2.PathFlags &&
-                   //spec1.DocFlags == spec2.DocFlags;
+            if (!(x is OperationSpec spec1) || !(y is OperationSpec spec2)) return false;
+            return spec1.Path == spec2.Path &&
+                   spec1.OpCode == spec2.OpCode &&
+                   spec1.PathFlags == spec2.PathFlags &&
+                   spec1.DocFlags == spec2.DocFlags;
         }
 
         /// <summary>
@@ -152,13 +144,12 @@ namespace Couchbase.Core.IO.Operations.SubDocument
         /// </returns>
         public int GetHashCode(object obj)
         {
-            var spec = obj as OperationSpec;
-            if (spec == null) return 0;
+            if (!(obj is OperationSpec spec)) return 0;
             var hash = 17;
             hash = hash*23 + (spec.Path == null ? 0 : spec.Path.GetHashCode());
-            //hash = hash*23 + spec.OpCode.GetHashCode();
-            //hash = hash*23 + PathFlags.GetHashCode();
-            //hash = hash*23 + DocFlags.GetHashCode();
+            hash = hash*23 + spec.OpCode.GetHashCode();
+            hash = hash*23 + PathFlags.GetHashCode();
+            hash = hash*23 + DocFlags.GetHashCode();
             return hash;
         }
 

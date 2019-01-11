@@ -22,8 +22,7 @@ namespace Couchbase.UnitTests
             {
                 for (int i = 0; i < 10000; i++)
                 {
-                    var option = new MutateOptions().Timeout(new TimeSpan(1, 1, 1)).Upsert("foo", "{bar}")
-                        .CreatePath(true).Insert("baz", new {poo = true});
+                    var option = new MutateInOptions().Timeout(new TimeSpan(1, 1, 1));
                 }
             }
         }

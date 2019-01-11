@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
+using System.Runtime.CompilerServices;
 
 namespace Couchbase
 {
@@ -195,97 +195,83 @@ namespace Couchbase
 
     #endregion
 
-    public class XAttrOptions
-    {
-        public bool CreatePath { get; set; }
-
-        public bool CreateDocument { get; set; }
-
-        //add more
-    }
-
     public struct LookupInOptions
     {
-        public LookupInOptions Path(string path)
-        {
-            return this;
-        }
-
-        public LookupInOptions Exists(string path)
-        {
-            return this;
-        }
-
-        public LookupInOptions XAttr(string path)
-        {
-            return this;
-        }
+        internal TimeSpan _Timeout { get; set; }
 
         public LookupInOptions Timeout(TimeSpan timeout)
         {
+            _Timeout = timeout;
             return this;
         } 
     }
 
-    public struct MutateOptions
+    public struct MutateInOptions
     {
-        internal bool _CreatePath { get; set; }
         internal TimeSpan _Timeout { get; set; }
-        internal Dictionary<string, object> _ops;
 
-        public MutateOptions CreatePath(bool createPath)
-        {
-            _CreatePath = createPath;
-            return this;
-        }
+        internal TimeSpan _Expiration { get; set; }
 
-        public MutateOptions Timeout(TimeSpan timeout)
+        internal ulong _Cas { get; set; }
+
+        internal SubdocDocFlags _Flags { get; set; }
+
+        internal Tuple<PersistTo, ReplicateTo> _Durabilty { get; set; }
+
+        internal DurabilityLevel _DurabilityLevel { get; set; }
+
+        public MutateInOptions Timeout(TimeSpan timeout)
         {
             _Timeout = timeout;
             return this;
         }
 
-        public MutateOptions Upsert<T>(string path, T value)
+        public MutateInOptions Timeout(int minutes = 0, int seconds = 0, int milliseconds=0)
         {
-            if(_ops == null) _ops = new Dictionary<string, object>();
-            _ops.Add(path, value);
+            return Timeout(new TimeSpan(0, 0, minutes, seconds, milliseconds));
+        }
+
+        public MutateInOptions Expiration(TimeSpan expiration)
+        {
+            _Expiration = expiration;
             return this;
         }
 
-        public MutateOptions Insert<T>(string path, T value)
+        public MutateInOptions Expiration(int days = 0, int hours = 0, int minutes = 0, int seconds = 0, int milliseconds=0)
         {
-            if(_ops == null) _ops = new Dictionary<string, object>();
-            _ops.Add(path, value);
+            return Expiration(new TimeSpan(days, hours, minutes, seconds, milliseconds));
+        }
+
+        public MutateInOptions Cas(ulong cas)
+        {
+            _Cas = cas;
             return this;
         }
 
-        public MutateOptions Replace<T>(string path, T value)
+        public MutateInOptions CreateDoc(bool createDoc)
         {
+            if (createDoc)
+            {
+                _Flags = _Flags | SubdocDocFlags.InsertDocument;
+            }
             return this;
         }
 
-        public MutateOptions Remove(string path)
+        public MutateInOptions Flags(SubdocDocFlags flags)
         {
+            _Flags = flags;
             return this;
         }
 
-        public MutateOptions ArrayAppend(string path, params object[] values)
+        public MutateInOptions Durability(PersistTo persistTo, ReplicateTo replicateTo)
         {
+            _Durabilty = new Tuple<PersistTo, ReplicateTo>(persistTo, replicateTo);
             return this;
         }
 
-        public MutateOptions ArrayPrepend(string path, params object[] values)
+        public MutateInOptions Durability(DurabilityLevel durabilityLevel)
         {
-            return this;
-        }
-
-        public MutateOptions ArrayInsert(string path, params object[] values)
-        {
-            return this;
-        }
-
-        public MutateOptions ArrayAddUnique(string path, params object[] values)
-        {
+            _DurabilityLevel = durabilityLevel;
             return this;
         }
     }
