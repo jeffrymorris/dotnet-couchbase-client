@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Couchbase.Core.IO.Operations.Temp
 {
-    class IBody
+    interface KeyValueRequest
     {
     }
 }

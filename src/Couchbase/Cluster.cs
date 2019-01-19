@@ -90,18 +90,11 @@ namespace Couchbase
             {
                 foreach (var configServer in _configuration.Servers)
                 {
-                    try
-                    {
-                        var bucket = new CouchbaseBucket(this, configBucket);
-                        //await bucket.BootstrapAsync(configServer).ConfigureAwait(false);
-                        bucket.LoadManifest("manifest.json"); //just for testing UI - guts coming soon
-                        _bucketRefs.TryAdd(configBucket, bucket);
-                        return;
-                    }
-                    catch (Exception e)
-                    {
-                        throw;
-                    }
+                    var bucket = new CouchbaseBucket(this, configBucket);
+                    //await bucket.BootstrapAsync(configServer).ConfigureAwait(false);
+                    bucket.LoadManifest("manifest.json"); //just for testing UI - guts coming soon
+                    _bucketRefs.TryAdd(configBucket, bucket);
+                    return;
                 }
             }
         }

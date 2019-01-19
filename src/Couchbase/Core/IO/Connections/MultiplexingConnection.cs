@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Core.IO.Converters;
-using Couchbase.Core.IO.Errors;
 using Couchbase.Core.IO.Operations;
+using Couchbase.Core.IO.Operations.Legacy.Errors;
 using Microsoft.Extensions.Logging;
 
 namespace Couchbase.Core.IO.Connections

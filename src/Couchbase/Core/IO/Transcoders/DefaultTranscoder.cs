@@ -2,6 +2,7 @@
 using System.Text;
 using Couchbase.Core.IO.Converters;
 using Couchbase.Core.IO.Operations;
+using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Core.IO.Serializers;
 
 namespace Couchbase.Core.IO.Transcoders
