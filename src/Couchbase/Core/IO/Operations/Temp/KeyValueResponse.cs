@@ -4,10 +4,7 @@ using System.Text;
 
 namespace Couchbase.Core.IO.Operations.Temp
 {
-    interface IHeader
+    class KeyValueResponse
     {
-        byte[] Write();
-
-        void Read(byte[] bytes);
     }
 }

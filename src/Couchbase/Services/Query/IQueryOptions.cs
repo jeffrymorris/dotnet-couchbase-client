@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Couchbase.Core;
-using Couchbase.Core.IO;
+using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Services.Query.Couchbase.N1QL;
 
 namespace Couchbase.Services.Query

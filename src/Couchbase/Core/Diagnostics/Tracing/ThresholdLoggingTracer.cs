@@ -195,7 +195,7 @@ namespace Couchbase.Core.Diagnostics.Tracing
                 }
                 catch (ObjectDisposedException) { } // ignore
                 catch (OperationCanceledException) { } // ignore
-                catch (Exception exception)
+                catch (Exception)
                 {
                    // Log.Error("Error when procesing spans for spans over serivce thresholds", exception);
                 }

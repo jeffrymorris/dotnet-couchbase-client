@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Core.IO.Converters;
-using Couchbase.Core.IO.Errors;
 using Couchbase.Core.IO.Operations;
+using Couchbase.Core.IO.Operations.Legacy.Errors;
 
 namespace Couchbase.Core.IO
 {

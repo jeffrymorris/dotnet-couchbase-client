@@ -49,7 +49,7 @@ namespace Couchbase.Core.IO.Operations
         /// </summary>
         ServerDuration = 0x0f,
 
-        Collections = 0x09
+        Collections = 0x11
 
 
     }

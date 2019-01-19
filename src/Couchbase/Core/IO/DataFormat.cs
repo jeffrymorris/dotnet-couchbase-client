@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Couchbase.Core.IO
+﻿namespace Couchbase.Core.IO
 {
     /// <summary>
     /// Specifies the formatting of data across all SDKs

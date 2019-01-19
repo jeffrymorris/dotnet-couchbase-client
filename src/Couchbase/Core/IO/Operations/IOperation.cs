@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using Couchbase.Core.IO.Converters;
-using Couchbase.Core.IO.Serializers;
+using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Core.IO.Transcoders;
 
 namespace Couchbase.Core.IO.Operations
@@ -11,6 +11,7 @@ namespace Couchbase.Core.IO.Operations
     {
 
     }
+
     public interface IOperation<T>
     {
         T Body { get; set; }

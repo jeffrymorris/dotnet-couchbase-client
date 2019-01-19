@@ -25,7 +25,7 @@ namespace Couchbase.UnitTests
             person.arms = 1;
 
             // 3) replace the readResult on the server
-            var mutateResults = await collection.Replace(result.Value.Id, (object) person,
+            var mutateResults = await collection.Replace("key1", (object) person,
                 options => { options.Timeout = new TimeSpan(); });
 
             Assert.True(mutateResults.Cas > 0);
@@ -102,7 +102,7 @@ namespace Couchbase.UnitTests
                 {
 
                     // 3) replace the readResult on the server
-                    var mutateResults = await collection.Replace(result.Value.Id, (object) person,
+                    var mutateResults = await collection.Replace("key1", (object) person,
                         options =>
                         {
                             options.Timeout = new TimeSpan(0, 0, 1);
@@ -142,7 +142,7 @@ namespace Couchbase.UnitTests
             person.Arms = new List<int> {1};
 
             // 3) replace the readResult on the server
-            var mutateResults = await collection.Replace(result.Value.Id, person, 
+            var mutateResults = await collection.Replace("key1", person, 
                 options => { options.Timeout  = new TimeSpan(0, 0, 1); });
 
             Assert.True(mutateResults.Cas > 0);

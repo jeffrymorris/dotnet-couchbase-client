@@ -20,7 +20,7 @@ namespace Couchbase
         private IByteConverter _converter = new DefaultConverter();
         private ITypeSerializer _serializer = new DefaultSerializer();
         
-        public GetResult(string id, ulong? cas, TimeSpan? expiration, bool isFulldoc)
+        public GetResult(string id, ulong cas, TimeSpan? expiration, bool isFulldoc)
         {
             Id = id;
             Cas = cas;
@@ -43,7 +43,7 @@ namespace Couchbase
         }
 
         public string Id { get; }
-        public ulong? Cas { get; }
+        public ulong Cas { get; }
         public TimeSpan? Expiration { get; set; }
 
         public T ContentAs<T>()

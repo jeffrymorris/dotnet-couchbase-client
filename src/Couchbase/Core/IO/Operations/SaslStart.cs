@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Couchbase.Core.IO.Converters;
+using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Core.IO.Transcoders;
 
 namespace Couchbase.Core.IO.Operations
@@ -26,8 +27,9 @@ namespace Couchbase.Core.IO.Operations
         const int HeaderLength = 24;
 
         public string Body { get; set; }
-
         public TimeSpan Timeout { get; set; }
+
+        public TimeSpan Expiration { get; set; }
 
         public uint Opaque { get; set; }
 
@@ -52,6 +54,7 @@ namespace Couchbase.Core.IO.Operations
         public int? VBucketIndex { get; set; }
 
         public Func<SocketAsyncState, Task> Completed { get; set; }
+        Flags IOperation<string>.Flags { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public byte[] Write()
         {
