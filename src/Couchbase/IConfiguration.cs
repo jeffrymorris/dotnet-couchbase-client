@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Couchbase
 {
@@ -19,5 +18,17 @@ namespace Couchbase
         string UserName { get; set; }
 
         string Password { get; set; }
+
+
+        TimeSpan ConnectTimeout { get; set; }
+        TimeSpan KvTimeout { get; set; }
+        TimeSpan ViewTimeout { get; set; }
+        TimeSpan QueryTimeout { get; set; }
+        TimeSpan AnalyticsTimeout { get; set; }
+        TimeSpan SearchTimeout { get; set; }
+        TimeSpan ManagementTimeout { get; set; }
+        bool UseSsl { get; set; }
+        bool EnableTracing { get; set; }
+        bool EnableMutationTokens { get; set; }
     }
 }

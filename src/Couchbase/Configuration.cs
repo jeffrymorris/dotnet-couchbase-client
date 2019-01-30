@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Couchbase
 {
@@ -60,6 +59,16 @@ namespace Couchbase
         public IEnumerable<string> Buckets => _buckets;
         public string UserName { get; set; }
         public string Password { get; set; }
+        public TimeSpan ConnectTimeout { get; set; }
+        public TimeSpan KvTimeout { get; set; }
+        public TimeSpan ViewTimeout { get; set; }
+        public TimeSpan QueryTimeout { get; set; }
+        public TimeSpan AnalyticsTimeout { get; set; }
+        public TimeSpan SearchTimeout { get; set; }
+        public TimeSpan ManagementTimeout { get; set; }
+        public bool UseSsl { get; set; }
+        public bool EnableTracing { get; set; }
+        public bool EnableMutationTokens { get; set; }
         public bool OrphanedResponseLoggingEnabled { get; set; }
     }
 }
