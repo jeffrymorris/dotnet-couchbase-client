@@ -9,7 +9,7 @@
         /// <summary>
         /// The value returned by the operation.
         /// </summary>
-        T Value { get;}
+        T Content { get;}
     }
 }
 

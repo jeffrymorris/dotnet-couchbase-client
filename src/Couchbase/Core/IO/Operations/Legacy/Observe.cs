@@ -1,26 +1,16 @@
 using System;
-using Couchbase.Core.Transcoders;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal sealed class Observe : OperationBase<ObserveState>
     {
-        public Observe(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket,  transcoder, timeout)
-        {
-        }
-
-        private Observe(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, default(ObserveState), vBucket, transcoder, opaque, timeout)
-        {
-        }
-
         public override byte[] Write()
         {
             var key = CreateKey();
 
             var body = new byte[4 + key.Length];
-            Converter.FromInt16((short)VBucket.Index, body, 0);
+            // ReSharper disable once PossibleInvalidOperationException
+            Converter.FromInt16(VBucketId.Value, body, 0);
             Converter.FromInt16((short)key.Length, body, 2);
             Converter.FromString(Key, body, 4);
 
@@ -69,8 +59,13 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new Observe(Key, VBucket, Transcoder, Opaque, Timeout)
+            var cloned = new Observe
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

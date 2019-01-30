@@ -1,19 +1,7 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class GetT<T> : OperationBase<T>
     {
-        public GetT(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
-        protected GetT(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, default(T), vBucket, transcoder, opaque, timeout)
-        {
-        }
-
         public override byte[] CreateExtras()
         {
             var extras = new byte[4];
@@ -41,8 +29,13 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new GetT<T>(Key, VBucket, Transcoder, Opaque, Timeout)
+            var cloned = new GetT<T>
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

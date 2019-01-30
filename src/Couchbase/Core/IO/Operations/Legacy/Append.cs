@@ -1,27 +1,10 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal sealed class Append<T> : MutationOperationBase<T>
     {
-        public Append(string key, T value, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, value, vBucket, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-        }
-
-        public Append(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
-        private Append(string key, T value, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, value, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
         public override byte[] CreateExtras()
         {
-            Flags = Transcoder.GetFormat(RawValue);
+            Flags = Transcoder.GetFormat(Content);
             Format = Flags.DataFormat;
             Compression = Flags.Compression;
             return new byte[0];
@@ -31,8 +14,13 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new Append<T>(Key, RawValue, VBucket, Transcoder, Opaque, Timeout)
+            var cloned = new Append<T>
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

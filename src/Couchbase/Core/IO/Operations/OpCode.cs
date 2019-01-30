@@ -87,6 +87,9 @@ namespace Couchbase.Core.IO.Operations
         SubGetCount = 0xd2,
 
         //the collections manifest
-        GetCollectionsManifest = 0xBA
+        GetCollectionsManifest = 0xBA,
+
+        //Get the CID by name
+        CollectionsGetId = 0xbb
     }
 }

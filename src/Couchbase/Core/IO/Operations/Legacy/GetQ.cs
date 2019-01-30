@@ -1,25 +1,18 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class GetQ<T>: Get<T>
     {
-        public GetQ(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
-        protected GetQ(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
         public override OpCode OpCode => OpCode.GetQ;
 
         public override IOperation Clone()
         {
-            var cloned = new GetQ<T>(Key, VBucket, Transcoder, Opaque, Timeout)
+            var cloned = new GetQ<T>
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

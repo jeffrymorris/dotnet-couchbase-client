@@ -1,13 +1,7 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy.Authentication
+﻿namespace Couchbase.Core.IO.Operations.Legacy.Authentication
 {
     internal sealed class SelectBucket : OperationBase
     {
-        public SelectBucket(string key, ITypeTranscoder transcoder, uint timeout)
-            : base(key, null, transcoder, timeout)
-        { }
-
         public override OpCode OpCode => OpCode.SelectBucket;
 
         public override bool RequiresKey => true;

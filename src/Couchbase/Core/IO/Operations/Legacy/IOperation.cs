@@ -4,7 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Couchbase.Core.Configuration.Server;
 using Couchbase.Core.IO.Operations.Legacy.Errors;
-using Couchbase.Core.Transcoders;
+using Couchbase.Core.IO.Transcoders;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
@@ -14,61 +14,51 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         string Key { get; }
 
+        uint Opaque { get; }
+
+        ulong Cas { get; set; }
+
+        uint? Cid { get; set; }
+
+        short? VBucketId { get; set; }
+
         bool RequiresKey { get; }
 
         Exception Exception { get; set; }
 
-        int BodyOffset { get; }
-
-        ulong Cas { get; set; }
-
-        void Read(byte[] buffer, ErrorMap errorMap = null);
-
-        void Read(byte[] buffer, OperationHeader header, ErrorCode errorCode);
-
-        byte[] Write();
-
-        Task<byte[]> WriteAsync();
-
         MemoryStream Data { get; set; }
 
-        byte[] Buffer { get; set; }
+        uint LastConfigRevisionTried { get; set; }
 
-        int LengthReceived { get; }
+        string BucketName { get; set; }
 
         int TotalLength { get; }
-
-        string GetMessage();
-
-        void Reset();
-
-        OperationHeader Header { get; set; }
-
-        OperationBody Body { get; set; }
 
         int Attempts { get; set; }
 
         int MaxRetries { get; }
 
-        IVBucket VBucket { get; set; }
+        IPEndPoint CurrentHost { get; set; }
 
-        void HandleClientError(string message, ResponseStatus responseStatus);
+        OperationHeader Header { get; set; }
 
-       ClusterMap GetConfig(ITypeTranscoder transcoder);
+        string GetMessage();
 
-        uint Opaque { get; }
-
-        uint Timeout { get; set; }
-
-        bool TimedOut();
+        void Reset();
 
         DateTime CreationTime { get; set; }
+
+        byte[] Write();
+
+        Task<byte[]> WriteAsync();
 
         Task ReadAsync(byte[] buffer, ErrorMap errorMap = null);
 
         Task ReadAsync(byte[] buffer, OperationHeader header, ErrorCode errorCode);
 
-        byte[] WriteBuffer { get; set; }
+        void HandleClientError(string message, ResponseStatus responseStatus);
+
+        BucketConfig GetConfig(ITypeTranscoder transcoder);
 
         Func<SocketAsyncState, Task> Completed { get; set; }
 
@@ -76,13 +66,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         IOperationResult GetResult();
 
-        IPEndPoint CurrentHost { get; set; }
-
         IOperation Clone();
-
-        uint LastConfigRevisionTried { get; set; }
-
-        string BucketName { get; set; }
 
         int GetRetryTimeout(int defaultTimeout);
     }

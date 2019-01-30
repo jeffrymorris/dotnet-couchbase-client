@@ -3,7 +3,7 @@
     /// <summary>
     /// The primary return type for binary Memcached operations
     /// </summary>
-    public interface IOperationResult : Couchbase.IResult
+    public interface IOperationResult : IResult
     {
         /// <summary>
         /// Gets the mutation token for the operation if enhanced durability is enabled.
@@ -18,7 +18,7 @@
         /// <summary>
         /// The 'Check and Set' or 'CAS' value for enforcing optimistic concurrency.
         /// </summary>
-        ulong Cas { get; }
+        ulong Cas { get; set; }
 
         /// <summary>
         /// The server's response status for the operation.

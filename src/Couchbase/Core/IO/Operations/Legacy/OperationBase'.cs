@@ -1,35 +1,23 @@
 ﻿using System;
 using System.Reflection;
-using Couchbase.Core.Transcoders;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal abstract class OperationBase<T> : OperationBase, IOperation<T>
     {
-        protected T Value;
-
-        protected OperationBase(string key, T value, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, vBucket, transcoder, opaque, timeout)
-        {
-            Value = value;
-        }
-
-        protected OperationBase(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : this(key, default(T), vBucket, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-        }
+        public T Content { get; set; }
 
         public override byte[] CreateBody()
         {
             byte[] bytes;
             if (typeof(T).GetTypeInfo().IsValueType)
             {
-                bytes = Transcoder.Encode(RawValue, Flags, OpCode);
+                bytes = Transcoder.Encode(Content, Flags, OpCode);
             }
             else
             {
-                bytes = RawValue == null ? new byte[0] :
-                    Transcoder.Encode(RawValue, Flags, OpCode);
+                bytes = Content == null ? new byte[0] :
+                    Transcoder.Encode(Content, Flags, OpCode);
             }
 
             return bytes;
@@ -44,7 +32,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
                 result.Success = GetSuccess();
                 result.Message = GetMessage();
                 result.Status = GetResponseStatus();
-                result.Value = value;
+                result.Content = value;
                 result.Cas = Header.Cas;
                 result.Exception = Exception;
                 result.Token = MutationToken ?? DefaultMutationToken;
@@ -97,13 +85,11 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return result;
         }
 
-        internal T RawValue => Value;
-
         public override byte[] CreateExtras()
         {
             var extras = new byte[8];
 
-            Flags = Transcoder.GetFormat(RawValue);
+            Flags = Transcoder.GetFormat(Content);
             Format = Flags.DataFormat;
             Compression = Flags.Compression;
 
@@ -138,10 +124,10 @@ namespace Couchbase.Core.IO.Operations.Legacy
                                   key.GetLengthSafe() +
                                   header.GetLengthSafe()];
 
-            System.Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-            System.Buffer.BlockCopy(extras, 0, buffer, header.Length, extras.Length);
-            System.Buffer.BlockCopy(key, 0, buffer, header.Length + extras.Length, key.Length);
-            System.Buffer.BlockCopy(body, 0, buffer, header.Length + extras.Length + key.Length, body.Length);
+            Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
+            Buffer.BlockCopy(extras, 0, buffer, header.Length, extras.Length);
+            Buffer.BlockCopy(key, 0, buffer, header.Length + extras.Length, key.Length);
+            Buffer.BlockCopy(body, 0, buffer, header.Length + extras.Length + key.Length, body.Length);
 
             return buffer;
         }

@@ -1,23 +1,7 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class Noop : OperationBase
     {
-        public Noop(ITypeTranscoder transcoder, uint timeout)
-            : this(string.Empty, null, transcoder, timeout)
-        {
-        }
-        public Noop(string key, ITypeTranscoder transcoder, IVBucket vBucket, uint opaque, uint timeout)
-            : base(key, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
-        public Noop(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
         public override OpCode OpCode => OpCode.NoOp;
 
         public override byte[] Write()

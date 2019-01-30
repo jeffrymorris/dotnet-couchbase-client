@@ -1,20 +1,16 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class Unlock : OperationBase
     {
-        public Unlock(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
         public override OpCode OpCode => OpCode.Unlock;
 
         public override IOperation Clone()
         {
-            var cloned = new Unlock(Key, VBucket, Transcoder, Timeout)
+            var cloned = new Unlock
             {
+                Key = Key,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,
