@@ -28,12 +28,15 @@
     <Compile Remove="Core\IO\Operations\Config.cs" />
     <Compile Remove="Core\IO\Operations\Get.cs" />
     <Compile Remove="Core\IO\Operations\Helo.cs" />
+    <Compile Remove="Core\IO\Operations\IOperation.cs" />
     <Compile Remove="Core\IO\Operations\Legacy\OperationCode.cs" />
     <Compile Remove="Core\IO\Operations\Manifest.cs" />
+    <Compile Remove="Core\IO\Operations\SaslStart.cs" />
     <Compile Remove="Core\IO\Operations\SelectBucket.cs" />
     <Compile Remove="Core\IO\Operations\ServerFeatures.cs" />
     <Compile Remove="Core\IO\Operations\Set.cs" />
     <Compile Remove="Core\IO\Operations\Upsert.cs" />
+    <Compile Remove="Core\Transcoders\ITypeTranscoder.cs" />
     <Compile Remove="IDocument %282%29.cs" />
     <Compile Remove="IDocument_T.cs" />
     <Compile Remove="IFetchOperation.cs" />
@@ -42,6 +45,8 @@
   <ItemGroup>
     <Folder Include="Core\Diagnostics\Logging\" />
     <Folder Include="Core\Converters\" />
+    <Folder Include="Core\Transcoders\" />
+    <Folder Include="Services\Collections\" />
   </ItemGroup>
 
   <ItemGroup>

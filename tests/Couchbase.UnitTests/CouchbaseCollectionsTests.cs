@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Moq;
 using Xunit;
@@ -20,7 +19,7 @@ namespace Couchbase.UnitTests
                 options => { options.Timeout = new TimeSpan(0, 0, 1); });
 
             // 2) Make a modification to the content
-            var person = result.Value.ContentAs<dynamic>();
+            var person = result.ContentAs<dynamic>();
             person.age = 45;
             person.arms = 1;
 
@@ -45,7 +44,7 @@ namespace Couchbase.UnitTests
                 });
 
             // 2) make modifications to the content
-            var items = result.Value.ContentAs<List<int>>();
+            var items = result.ContentAs<List<int>>();
             items.Add(13);
             items.Add(42);
 
@@ -94,7 +93,7 @@ namespace Couchbase.UnitTests
                     options => { options.Timeout = new TimeSpan(0, 0, 1); });
 
                 // 2) Make a modification to the content
-                var person = result.Value.ContentAs<dynamic>();
+                var person = result.ContentAs<dynamic>();
                 person.age = 45;
                 person.arms = new List<int> {1};
 
@@ -137,7 +136,7 @@ namespace Couchbase.UnitTests
                 options => { options.Timeout = new TimeSpan(0, 0, 1); });
 
             // 2) Make a modification to the content
-            var person = result.Value.ContentAs<Person>();
+            var person = result.ContentAs<Person>();
             person.Age = 45;
             person.Arms = new List<int> {1};
 
@@ -163,7 +162,7 @@ namespace Couchbase.UnitTests
               });
 
             // 2) Make a modification to the content
-            var person = result.Value.ContentAs<Person>();
+            var person = result.ContentAs<Person>();
             person.Age = 45;
             person.Arms = new List<int> {1};
 
@@ -194,7 +193,7 @@ namespace Couchbase.UnitTests
                     Project("age", "arms", "poo", "bar"));
 
             // 2) Make a modification to the content
-            var person = result.Value.ContentAs<Person>();
+            var person = result.ContentAs<Person>();
             person.Age = 45;
             person.Arms = new List<int> {1};
 

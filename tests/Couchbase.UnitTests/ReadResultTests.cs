@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Couchbase.Core.IO.Operations;
 using Xunit;
 
 namespace Couchbase.UnitTests
@@ -31,7 +32,7 @@ namespace Couchbase.UnitTests
         [Fact]
         public void Test_FullDoc_PathRead()
         {
-            var result = new GetResult(PocoBytes, true);
+            var result = new GetResult(PocoBytes, "id", 0, TimeSpan.Zero, true);
             var content = result.ContentAs<string>("name");
             Assert.Equal("bob", content);
         }
@@ -39,7 +40,7 @@ namespace Couchbase.UnitTests
         [Fact]
         public void Test_FullDoc_FullRead()
         {
-            var result = new GetResult(PocoBytes, true);
+            var result = new GetResult(PocoBytes, "id", 0, TimeSpan.Zero, true);
             var content = result.ContentAs<dynamic>();
             Assert.Equal("bob", content.name.Value);
         }
@@ -48,7 +49,7 @@ namespace Couchbase.UnitTests
         [Fact]
         public void Test_SubDoc_PathRead()
         {
-            var result = new GetResult(LookupBytes, false);
+            var result = new GetResult(LookupBytes, "id", 0, TimeSpan.Zero, false);
             var content = result.ContentAs<string>("foo");
             Assert.Equal("bar", content);
         }
@@ -56,7 +57,7 @@ namespace Couchbase.UnitTests
         [Fact]
         public void Test_SubDoc_FullRead()
         {
-            var readResult = new GetResult(LookupBytes, false);
+            var readResult = new GetResult(LookupBytes, "id", 0, TimeSpan.Zero, false);
             var content = readResult.ContentAs<dynamic>();
             Assert.Equal("bar", content["foo"]);
         }

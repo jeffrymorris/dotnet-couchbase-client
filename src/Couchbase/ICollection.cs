@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Couchbase
 {
     public interface ICollection
     {      
-        string Cid { get; }
+        uint Cid { get; }
 
         string Name { get; }
 
@@ -13,44 +14,49 @@ namespace Couchbase
 
         #region GET
 
-        Task<Optional<IGetResult>> Get(string id, TimeSpan timeSpan = new TimeSpan());
+        Task<IGetResult> Get(string id,
+            TimeSpan? timeout = null,
+            CancellationToken token = default(CancellationToken));
 
-        Task<Optional<IGetResult>> Get(string id, GetOptions options);
+        Task<IGetResult> Get(string id, GetOptions options);
 
-        Task<Optional<IGetResult>> Get(string id, Action<GetOptions> options);
+        Task<IGetResult> Get(string id, Action<GetOptions> options);
 
         #endregion
 
         #region SET
 
         Task<IMutationResult> Upsert<T>(string id, T content,
-            TimeSpan timeSpan = new TimeSpan(),
+            TimeSpan? timeout = null,
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero);
+            ReplicateTo replicateTo = ReplicateTo.Zero,
+            CancellationToken token = default(CancellationToken));
 
         Task<IMutationResult> Upsert<T>(string id, T content, UpsertOptions options);
 
         Task<IMutationResult> Upsert<T>(string id, T content, Action<UpsertOptions> options);
 
-        Task<IMutationResult> Insert<T>(string id, T content, 
-            TimeSpan timeSpan = new TimeSpan(),     
+        Task<IMutationResult> Insert<T>(string id, T content,
+            TimeSpan? timeout = null,
             TimeSpan expiration = new TimeSpan(), 
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero);
+            ReplicateTo replicateTo = ReplicateTo.Zero,
+            CancellationToken token = default(CancellationToken));
 
         Task<IMutationResult> Insert<T>(string id, T content, InsertOptions options);
 
         Task<IMutationResult> Insert<T>(string id, T content, Action<InsertOptions> options);
 
         Task<IMutationResult> Replace<T>(string id, T content, 
-            TimeSpan timeSpan = new TimeSpan(), 
+            TimeSpan? timeout = null,
             TimeSpan expiration = new TimeSpan(), 
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero);
+            ReplicateTo replicateTo = ReplicateTo.Zero,
+            CancellationToken token = default(CancellationToken));
 
         Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options);
 
@@ -61,10 +67,11 @@ namespace Couchbase
         #region Remove
 
         Task Remove(string id, 
-            TimeSpan timeSpan = new TimeSpan(),
+            TimeSpan? timeout = null,
             uint cas = 0,
             PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero);
+            ReplicateTo replicateTo = ReplicateTo.Zero,
+            CancellationToken token = default(CancellationToken));
 
         Task Remove(string id, RemoveOptions options);
 
@@ -74,17 +81,21 @@ namespace Couchbase
 
         #region Unlock
 
-        Task Unlock<T>(int id, TimeSpan timeSpan = new TimeSpan());
+        Task Unlock<T>(string id,
+            TimeSpan? timeout = null,
+            CancellationToken token = default(CancellationToken));
 
-        Task Unlock<T>(int id, UnlockOptions options);
+        Task Unlock<T>(string id, UnlockOptions options);
 
-        Task Unlock<T>(int id, Action<UnlockOptions> options);
+        Task Unlock<T>(string id, Action<UnlockOptions> options);
 
         #endregion
 
         #region Touch
 
-        Task Touch(string id, TimeSpan expiration, TimeSpan timeout = new TimeSpan());
+        Task Touch(string id, TimeSpan expiration,
+            TimeSpan? timeout = null,
+            CancellationToken token = default(CancellationToken));
 
         Task Touch(string id, GetAndTouchOptions options);
 
