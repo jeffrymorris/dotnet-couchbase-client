@@ -28,8 +28,11 @@ namespace Couchbase
             _isFulldoc = isFulldoc;
         }
 
-        internal GetResult(byte[] contentBytes, bool isFulldoc)
+        internal GetResult(byte[] contentBytes, string id, ulong cas, TimeSpan? expiration, bool isFulldoc)
         {
+            Id = id;
+            Cas = cas;
+            Expiration = expiration;
             _contentBytes = contentBytes;
             _isFulldoc = isFulldoc;
 
@@ -67,6 +70,8 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
+        public bool HasValue => _contentBytes.Length > 24;
+
         public T ContentAs<T>(string path)
         {
             if (_isFulldoc)
@@ -98,7 +103,6 @@ namespace Couchbase
             var statusOffset = 24;//Header.BodyOffset;
             var valueLengthOffset = statusOffset + 2;
             var valueOffset = statusOffset + 6;
-            var commandIndex = 0;
 
             var operationSpecs = new List<OperationSpec>();
             for (;;)
@@ -106,12 +110,13 @@ namespace Couchbase
                 var bodyLength = _converter.ToInt32(response, valueLengthOffset);
                 var payLoad = new byte[bodyLength];
                 System.Buffer.BlockCopy(response, valueOffset, payLoad, 0, bodyLength);
-                var pathLength = _converter.ToUInt16(payLoad, 2);
 
-                var command = new OperationSpec();
-                command.Status = (ResponseStatus)_converter.ToUInt16(response, statusOffset);
-                command.ValueIsJson = payLoad.IsJson(0, bodyLength - 1);
-                command.Bytes = payLoad;
+                var command = new OperationSpec
+                {
+                    Status = (ResponseStatus) _converter.ToUInt16(response, statusOffset),
+                    ValueIsJson = payLoad.IsJson(0, bodyLength - 1),
+                    Bytes = payLoad
+                };
                 operationSpecs.Add(command);
 
                 statusOffset = valueOffset + bodyLength;
