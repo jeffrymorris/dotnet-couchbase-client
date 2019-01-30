@@ -21,7 +21,6 @@ namespace Couchbase.Core.IO
         public Timer Timer; 
         public string ConnectionId { get; set; }
         public ErrorMap ErrorMap { get; set; }
-        public int Timeout { get; set; }
         public string LocalEndpoint { get; set; }
 
         /// <summary>
@@ -29,10 +28,7 @@ namespace Couchbase.Core.IO
         /// </summary>
         public void Cancel(ResponseStatus status, Exception e = null)
         {
-            if (Timer != null)
-            {
-                Timer.Dispose();
-            }
+            Timer?.Dispose();
 
             var response = new byte[24];
             Converter.FromUInt32(Opaque, response, HeaderOffsets.Opaque);
@@ -47,7 +43,6 @@ namespace Couchbase.Core.IO
                 EndPoint = EndPoint,
                 ConnectionId = ConnectionId,
                 ErrorMap = ErrorMap,
-                Timeout = Timeout,
                 LocalEndpoint = LocalEndpoint
             });
         }
@@ -83,7 +78,6 @@ namespace Couchbase.Core.IO
                 EndPoint = EndPoint,
                 ConnectionId = ConnectionId,
                 ErrorMap = ErrorMap,
-                Timeout = Timeout,
                 LocalEndpoint = LocalEndpoint
             }));
         }
