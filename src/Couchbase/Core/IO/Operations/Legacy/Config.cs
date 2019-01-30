@@ -1,31 +1,13 @@
 ﻿using System;
 using System.Net;
 using Couchbase.Core.Configuration.Server;
-using Couchbase.Core.Transcoders;
 using Newtonsoft.Json;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
-    internal sealed class Config : OperationBase<ClusterMap>
+    internal sealed class Config : OperationBase<BucketConfig>
     {
         private readonly IPEndPoint _endpoint;
-
-        public Config(ITypeTranscoder transcoder, uint timeout, IPEndPoint endpoint)
-            : this(string.Empty, null, transcoder, timeout, endpoint)
-        {
-        }
-
-        public Config(string key, ClusterMap value, ITypeTranscoder transcoder, IVBucket vBucket, uint opaque, uint timeout, IPEndPoint endpoint)
-            : base(key, value, vBucket, transcoder, opaque, timeout)
-        {
-            _endpoint = endpoint;
-        }
-
-        public Config(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout, IPEndPoint endpoint)
-            : base(key, vBucket, transcoder, timeout)
-        {
-            _endpoint = endpoint;
-        }
 
         public override byte[] CreateExtras()
         {
@@ -52,9 +34,9 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override OpCode OpCode => OpCode.GetClusterConfig;
 
-        public override ClusterMap GetValue()
+        public override BucketConfig GetValue()
         {
-            ClusterMap bucketConfig = null;
+            BucketConfig bucketConfig = null;
             if (Success && Data != null)
             {
                 try
@@ -68,7 +50,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
                     {
                         json = json.Replace("$HOST", _endpoint.Address.ToString());
                     }
-                    bucketConfig = JsonConvert.DeserializeObject<ClusterMap>(json);
+                    bucketConfig = JsonConvert.DeserializeObject<BucketConfig>(json);
                 }
                 catch (Exception e)
                 {

@@ -8,7 +8,7 @@ namespace Couchbase
     {
         string Name { get; }
 
-        Task BootstrapAsync(Uri uri);
+        Task BootstrapAsync(Uri uri, IConfiguration configuration);
 
         Task<IScope> this[string name] { get; }
 
@@ -19,8 +19,5 @@ namespace Couchbase
         Task<IViewResult> ViewQuery<T>(string statement, IViewOptions options);
 
         Task<ISpatialViewResult> SpatialViewQuery<T>(string statement, ISpatialViewOptions options);
-
-        [Obsolete("Temp solution until server supports getting a manifest.")]
-        void LoadManifest(string path);
     }
 }

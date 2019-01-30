@@ -1,23 +1,23 @@
 ﻿using System.Collections.Generic;
 
-namespace Couchbase.Services.Collections
+namespace Couchbase.Core.Configuration.Server
 {
-    public class Collection
+    public class CollectionDef
     {
         public string name { get; set; }
         public string uid { get; set; }
     }
 
-    public class Scope
+    public class ScopeDef
     {
         public string name { get; set; }
         public string uid { get; set; }
-        public List<Collection> collections { get; set; }
+        public List<CollectionDef> collections { get; set; }
     }
 
     public class Manifest
     {
         public string uid { get; set; }
-        public List<Scope> scopes { get; set; }
+        public List<ScopeDef> scopes { get; set; }
     }
 }

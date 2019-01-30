@@ -5,13 +5,12 @@ using Couchbase.Management;
 using Couchbase.Services.Analytics;
 using Couchbase.Services.Query;
 using Couchbase.Services.Search;
-using Couchbase.Services.Views;
 
 namespace Couchbase
 {
     public interface ICluster : IDisposable
     {
-        Task ConnectAsync(IConfiguration config);
+        Task Initialize();
 
         Task<IBucket> this[string name] { get; }
 

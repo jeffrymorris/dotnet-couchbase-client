@@ -1,14 +1,7 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal sealed class Delete : MutationOperationBase
     {
-        public Delete(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
         public override OpCode OpCode => OpCode.Delete;
 
         public override byte[] Write()
@@ -26,8 +19,11 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new Delete(Key, VBucket, Transcoder, Timeout)
+            var cloned = new Delete
             {
+                Key = Key,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

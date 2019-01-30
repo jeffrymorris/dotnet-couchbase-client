@@ -9,7 +9,7 @@ namespace Couchbase.UnitTests
         public async Task GetCollection_Returns_Collection()
         {
             var cluster = new Cluster();
-            await cluster.ConnectAsync(new Configuration
+            await cluster.Initialize(new Configuration
             {
                 UserName = "Administrator",
                 Password = "password"
@@ -27,7 +27,7 @@ namespace Couchbase.UnitTests
         public async Task GetCollection_Throws_CollectionNotFoundException_When_Collection_Missing()
         {
             var cluster = new Cluster();
-            await cluster.ConnectAsync(new Configuration
+            await cluster.Initialize(new Configuration
             {
                 UserName = "Administrator",
                 Password = "password"

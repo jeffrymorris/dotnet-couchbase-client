@@ -1,19 +1,7 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class ReplicaRead<T> : OperationBase<T>
     {
-        private ReplicaRead(string key, ITypeTranscoder transcoder, IVBucket vBucket, uint opaque, uint timeout)
-            : base(key, default(T), vBucket, transcoder, opaque, timeout)
-        {
-        }
-
-        public ReplicaRead(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
         public override OpCode OpCode => OpCode.ReplicaRead;
 
         public override byte[] CreateExtras()
@@ -36,8 +24,13 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new ReplicaRead<T>(Key, Transcoder, VBucket, Opaque, Timeout)
+            var cloned = new ReplicaRead<T>
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

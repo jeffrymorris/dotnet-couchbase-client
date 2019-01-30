@@ -1,16 +1,9 @@
 using System;
-using Couchbase.Core.Transcoders;
 
 namespace Couchbase.Core.IO.Operations.Legacy.EnhancedDurability
 {
     internal class ObserveSeqno : OperationBase<ObserveSeqnoResponse>
     {
-        public ObserveSeqno(MutationToken mutationToken, ITypeTranscoder transcoder, uint timeout)
-            : base(null, null, transcoder, timeout)
-        {
-            MutationToken = mutationToken;
-        }
-
         /// <summary>
         /// Gets the operation code for <see cref="OpCode"/>
         /// </summary>
@@ -96,8 +89,14 @@ namespace Couchbase.Core.IO.Operations.Legacy.EnhancedDurability
         /// <returns></returns>
         public override IOperation Clone()
         {
-            var cloned = new ObserveSeqno(MutationToken, Transcoder, Timeout)
+            var cloned = new ObserveSeqno
             {
+                MutationToken = MutationToken,
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 CreationTime = CreationTime,
                 BucketName = BucketName,

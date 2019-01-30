@@ -1,6 +1,4 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     /// <summary>
     /// Represents an abstract base class for mutation operations (PROTOCOL_BINARY_CMD_SET, DELETE,REPLACE, ADD,
@@ -9,16 +7,6 @@ namespace Couchbase.Core.IO.Operations.Legacy
     /// <typeparam name="T"></typeparam>
     internal abstract class MutationOperationBase : OperationBase
     {
-        protected MutationOperationBase(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
-        protected MutationOperationBase(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
         /// <summary>
         /// Reads the VBucketUUID and Sequence Number from  the extras if the instance has a <see cref="OperationBase.VBucket"/> -
         /// only persistent Couchbase buckets that use VBucket Hashing support mutation tokens.

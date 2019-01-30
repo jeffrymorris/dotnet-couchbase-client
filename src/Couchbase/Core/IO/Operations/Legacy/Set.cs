@@ -1,6 +1,4 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     /// <summary>
     /// Add a key to the database, replacing the key if it already exists.
@@ -8,22 +6,17 @@ namespace Couchbase.Core.IO.Operations.Legacy
     /// <typeparam name="T">The value to insert.</typeparam>
     internal sealed class Set<T> : MutationOperationBase<T>
     {
-        public Set(string key, T value, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, value, vBucket, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-        }
-
-        private Set(string key, T value, ITypeTranscoder transcoder, IVBucket vBucket, uint opaque, uint timeout)
-            : base(key, value, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
         public override OpCode OpCode => OpCode.Set;
 
         public override IOperation Clone()
         {
-            var cloned = new Set<T>(Key, RawValue, Transcoder, VBucket, Opaque, Timeout)
+            var cloned = new Set<T>
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

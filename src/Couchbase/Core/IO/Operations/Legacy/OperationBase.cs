@@ -6,61 +6,50 @@ using System.Threading.Tasks;
 using Couchbase.Core.Configuration.Server;
 using Couchbase.Core.IO.Converters;
 using Couchbase.Core.IO.Operations.Legacy.Errors;
-using Couchbase.Core.Transcoders;
+using Couchbase.Core.IO.Transcoders;
+using Couchbase.Core.Utils;
 using Newtonsoft.Json;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal abstract class OperationBase : IOperation
     {
-        private bool _timedOut;
-        protected IByteConverter Converter;
         protected Flags Flags;
         public const int DefaultRetries = 2;
         protected static MutationToken DefaultMutationToken = new MutationToken(null, -1, -1, -1);
         internal ErrorCode ErrorCode;
+        private static readonly IByteConverter DefaultConverter = new DefaultConverter();
+        private static readonly ITypeTranscoder DefaultTranscoder = new DefaultTranscoder(DefaultConverter);
 
-        protected OperationBase(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
+        protected OperationBase()
         {
-            Key = key;
-            Transcoder = transcoder;
-            Opaque = opaque;
-            CreationTime = DateTime.UtcNow;
-            Timeout = timeout;
-            VBucket = vBucket;
-            Converter = transcoder.Converter;
-            MaxRetries = DefaultRetries;
+            Opaque = SequenceGenerator.GetNext();
             Data = MemoryStreamFactory.GetMemoryStream();
             Header = new OperationHeader {Status = ResponseStatus.None};
-        }
+            Key = string.Empty;
 
-        protected OperationBase(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : this(key, vBucket, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
+            //temporarily make a static - later should be pluggable/set externally
+            Converter = DefaultConverter;
+            Transcoder = DefaultTranscoder;
         }
 
         public abstract OpCode OpCode { get; }
         public OperationHeader Header { get; set; }
-        public OperationBody Body { get; set; }
         public DataFormat Format { get; set; }
         public Compression Compression { get; set; }
-        public string Key { get; protected set; }
+        public string Key { get; set; }
         public Exception Exception { get; set; }
-        public virtual int BodyOffset => Header.BodyOffset;
         public ulong Cas { get; set; }
+        public uint? Cid { get; set; }
         public MemoryStream Data { get; set; }
-        public byte[] Buffer { get; set; }
-        public uint Opaque { get; protected set; }
-        public IVBucket VBucket { get; set; }
-        public int LengthReceived { get; protected set; }
+        public uint Opaque { get; set; }
+        public short? VBucketId { get; set; }
         public int TotalLength => Header.TotalLength;
         public virtual bool Success => GetSuccess();
         public uint Expires { get; set; }
         public int Attempts { get; set; }
         public int MaxRetries { get; set; }
         public DateTime CreationTime { get; set; }
-        public uint Timeout { get; set; }
-        public byte[] WriteBuffer { get; set; }
         public Func<SocketAsyncState, Task> Completed { get; set; }
 
         public virtual void Reset()
@@ -72,7 +61,6 @@ namespace Couchbase.Core.IO.Operations.Legacy
         {
             Data?.Dispose();
             Data = MemoryStreamFactory.GetMemoryStream();
-            LengthReceived = 0;
 
             Header = new OperationHeader
             {
@@ -89,44 +77,11 @@ namespace Couchbase.Core.IO.Operations.Legacy
         {
             Reset(responseStatus);
             var msgBytes = Encoding.UTF8.GetBytes(message);
-            LengthReceived += msgBytes.Length;
             if (Data == null)
             {
                 Data = MemoryStreamFactory.GetMemoryStream();
             }
             Data.Write(msgBytes, 0, msgBytes.Length);
-        }
-
-        [Obsolete]
-        public virtual void Read(byte[] buffer, int offset, int length)
-        {
-            var header = buffer.CreateHeader();
-            Read(buffer, header);
-        }
-
-        public void Read(byte[] buffer, ErrorMap errorMap = null)
-        {
-            var header = buffer.CreateHeader(errorMap, out var errorCode);
-            Read(buffer, header, errorCode);
-        }
-
-        public void Read(byte[] buffer, OperationHeader header, ErrorCode errorCode = null)
-        {
-            Header = header;
-            ErrorCode = errorCode;
-
-            if (buffer?.Length > 0)
-            {
-                Data.Write(buffer, 0, buffer.Length);
-                LengthReceived += buffer.Length;
-            }
-        }
-
-        [Obsolete]
-        public Task ReadAsync(byte[] buffer, int offset, int length)
-        {
-            var header = buffer.CreateHeader();
-            return ReadAsync(buffer, header);
         }
 
         public Task ReadAsync(byte[] buffer, ErrorMap errorMap = null)
@@ -142,9 +97,13 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
             if (buffer?.Length > 0)
             {
-                await Data.WriteAsync(buffer, 0, buffer.Length);
-                LengthReceived += buffer.Length;
+                await Data.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
             }
+        }
+
+        public OperationHeader ReadHeader()
+        {
+            return new OperationHeader();
         }
 
         public virtual Task<byte[]> WriteAsync()
@@ -171,9 +130,9 @@ namespace Couchbase.Core.IO.Operations.Legacy
             Converter.FromInt16((short)key.GetLengthSafe(), header, HeaderOffsets.KeyLength);
             Converter.FromByte((byte)extras.GetLengthSafe(), header, HeaderOffsets.ExtrasLength);
 
-            if (VBucket != null)
+            if (VBucketId.HasValue)
             {
-                Converter.FromInt16((short)VBucket.Index, header, HeaderOffsets.VBucket);
+                Converter.FromInt16(VBucketId.Value, header, HeaderOffsets.VBucket);
             }
 
             Converter.FromInt32(totalLength, header, HeaderOffsets.BodyLength);
@@ -212,8 +171,23 @@ namespace Couchbase.Core.IO.Operations.Legacy
         public virtual byte[] CreateKey()
         {
             var length = Encoding.UTF8.GetByteCount(Key);
+
+            //for collections add the leb128 cid
+            if (Cid.HasValue)
+            {
+                length = length + 2;
+            }
             var buffer = new byte[length];
-            Converter.FromString(Key, buffer, 0);
+            if (Cid.HasValue)
+            {
+                var leb128Bytes = Leb128.Write(Cid.Value, 2);
+                Buffer.BlockCopy(leb128Bytes, 0, buffer, 0, leb128Bytes.Length);
+                Converter.FromString(Key, buffer, 2);
+            }
+            else
+            {
+                Converter.FromString(Key, buffer, 0);
+            }
             return buffer;
         }
 
@@ -407,22 +381,16 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return body;
         }
 
-        [Obsolete("Please use Getconfig(ITypeTranscoder) instead.")]
-        public virtual ClusterMap GetConfig()
+        public virtual BucketConfig GetConfig(ITypeTranscoder transcoder)
         {
-            return GetConfig(Transcoder);
-        }
-
-        public virtual ClusterMap GetConfig(ITypeTranscoder transcoder)
-        {
-            ClusterMap config = null;
+            BucketConfig config = null;
             if (GetResponseStatus() == ResponseStatus.VBucketBelongsToAnotherServer && Data != null)
             {
                 var offset = Header.BodyOffset;
                 var length = Header.TotalLength - Header.BodyOffset;
 
                 //Override any flags settings since the body of the response has changed to a config
-                config = transcoder.Decode<ClusterMap>(Data.ToArray(), offset, length, new Flags
+                config = transcoder.Decode<BucketConfig>(Data.ToArray(), offset, length, new Flags
                 {
                     Compression = Compression.None,
                     DataFormat = DataFormat.Json,
@@ -442,19 +410,8 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return ErrorCode?.Retry != null && ErrorCode.Retry.Strategy != RetryStrategy.None;
         }
 
-        public bool TimedOut()
-        {
-            if (_timedOut) return _timedOut;
+        public ITypeTranscoder Transcoder { get; set; }
 
-            var elasped = DateTime.UtcNow.Subtract(CreationTime).TotalMilliseconds;
-            if (elasped >= Timeout || (ErrorCode != null && ErrorCode.HasTimedOut(elasped)))
-            {
-                _timedOut = true;
-            }
-            return _timedOut;
-        }
-
-        public ITypeTranscoder Transcoder { get; protected set; }
         public MutationToken MutationToken { get; protected set; }
 
         public virtual byte[] CreateExtras()
@@ -479,10 +436,10 @@ namespace Couchbase.Core.IO.Operations.Legacy
                                   key.GetLengthSafe() +
                                   header.GetLengthSafe()];
 
-            System.Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-            System.Buffer.BlockCopy(extras, 0, buffer, header.Length, extras.Length);
-            System.Buffer.BlockCopy(key, 0, buffer, header.Length + extras.Length, key.Length);
-            System.Buffer.BlockCopy(body, 0, buffer, header.Length + extras.Length + key.Length, body.Length);
+            Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
+            Buffer.BlockCopy(extras, 0, buffer, header.Length, extras.Length);
+            Buffer.BlockCopy(key, 0, buffer, header.Length + extras.Length, key.Length);
+            Buffer.BlockCopy(body, 0, buffer, header.Length + extras.Length + key.Length, body.Length);
 
             return buffer;
         }
@@ -506,46 +463,16 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return ErrorCode.GetNextInterval(Attempts, defaultTimeout);
         }
 
+        public IByteConverter Converter { get; set; }
+
         protected void TryReadMutationToken(byte[] buffer)
         {
-            if (buffer.Length >= 40 && VBucket != null)
+            if (buffer.Length >= 40 && VBucketId.HasValue)
             {
                 var uuid = Converter.ToInt64(buffer, Header.ExtrasOffset);
                 var seqno = Converter.ToInt64(buffer, Header.ExtrasOffset + 8);
-                MutationToken = new MutationToken(VBucket.BucketName, (short)VBucket.Index, uuid, seqno);
+                MutationToken = new MutationToken(BucketName, VBucketId.Value, uuid, seqno);
             }
-        }
-
-        #region "New" Write API Methods - override and implement these methods for new operations
-
-        public virtual byte[] AllocateBuffer(int length)
-        {
-            return new byte[length];
-        }
-
-        public virtual void WriteHeader(byte[] buffer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void WriteBody(byte[] buffer, int offset)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void WriteExtras(byte[] buffer, int offset)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void WriteKey(byte[] buffer, int offset)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void WritePath(byte[] buffer, int offset)
-        {
-            throw new NotImplementedException();
         }
 
         private short _keyLength;
@@ -586,8 +513,6 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public string BucketName { get; set; }
     }
-
-#endregion
 }
 
 #region [ License information          ]

@@ -1,4 +1,4 @@
-﻿using Couchbase.Core.Transcoders;
+﻿using Couchbase.Core.IO.Transcoders;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {

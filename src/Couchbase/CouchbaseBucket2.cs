@@ -19,7 +19,7 @@ using Newtonsoft.Json;
 
 namespace Couchbase
 {
-   /* public interface IBucketSender
+  /*  public interface IBucketSender
     {
         Task Send<T>(IOperation<T> op, TaskCompletionSource<IReadResult<T>> tcs);
     }
@@ -178,14 +178,14 @@ namespace Couchbase
             return new MultiplexingConnection(null, socket, new DefaultConverter());
         }
 
-        public ICollection this[string name] => GetCollection(DefaultCollection, name);
+        public Task<ICollection> this[string name] => GetCollection(DefaultCollection, name);
 
         public ICollection GetCollection(string name)
         {
             return null;
         }
 
-        public ICollection GetCollection(string scope, string name)
+        public Task<ICollection> GetCollection(string scope, string name)
         {
             if(_scopes.TryGetValue(scope, out List<ICollection> collections))
             {
@@ -194,260 +194,9 @@ namespace Couchbase
                 {
                     throw new Exception("CouchbaseCollection not found: " + name);//todo make exception more specific
                 }
-                return collection;
+                return Task.FromResult(collection);
             }
             throw new Exception("Scope not found: " + scope);//todo make exception more specific
-        }
-
-        public Task<IReadResult<T>> Get<T>(string id, TimeSpan timeSpan = new TimeSpan())
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Get<T>(string id, GetOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Get<T>(string id, Action<GetOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> GetAndLock<T>(string id, TimeSpan expiration, TimeSpan timeSpan = new TimeSpan(), uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> GetAndLock<T>(string id, GetAndLockOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> GetAndLock<T>(string id, Action<GetAndLockOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> GetAndTouch<T>(string id, TimeSpan expiration, TimeSpan timeout = new TimeSpan())
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> GetAndTouch<T>(string id, GetAndTouchOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> GetAndTouch<T>(string id, Action<GetAndTouchOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Upsert<T>(IReadResult<T> readResult, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
-            uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Upsert<T>(IReadResult<T> readResult, UpsertOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Upsert<T>(IReadResult<T> readResult, Action<UpsertOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Insert<T>(IReadResult<T> readResult, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
-            uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Insert<T>(IReadResult<T> readResult, InsertOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Insert<T>(IReadResult<T> readResult, Action<InsertOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Replace<T>(IReadResult<T> readResult, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
-            uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Replace<T>(IReadResult<T> readResult, ReplaceOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Replace<T>(IReadResult<T> readResult, Action<ReplaceOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<T>> Remove<T>(string id, TimeSpan timeSpan = new TimeSpan(), uint cas = 0, PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Remove<T>(string id, RemoveOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Remove<T>(string id, Action<RemoveOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Increment(string id, ulong delta, ulong initial, TimeSpan timeout = new TimeSpan(),
-            TimeSpan expiration = new TimeSpan(), uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<ulong>> Increment(string id, IncrementOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<ulong>> Increment(string id, Action<IncrementOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<ulong>> Decrement(string id, ulong delta, ulong initial, TimeSpan timeSpan = new TimeSpan(),
-            TimeSpan expiration = new TimeSpan(), uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<ulong>> Decrement(string id, DecrementOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<ulong>> Decrement(string id, Action<DecrementOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<string>> Append(string id, string value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
-            uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<string>> Append(string id, string value, AppendOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<string>> Append(string id, string value, Action<AppendOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<string>> Append(string id, byte[] value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
-            uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<byte[]>> Append(string id, byte[] value, AppendOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<byte[]>> Append(string id, byte[] value, Action<AppendOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<byte[]>> Prepend(string id, string value, TimeSpan timeSpan = new TimeSpan(), TimeSpan expiration = new TimeSpan(),
-            uint cas = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<string>> Prepend(string id, string value, PrependOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IReadResult<string>> Prepend(string id, string value, Action<PrependOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Unlock<T>(IReadResult<T> readResult, TimeSpan timeSpan = new TimeSpan())
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Unlock<T>(IReadResult<T> readResult, UnlockOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Unlock<T>(IReadResult<T> readResult, Action<UnlockOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Touch(string id, TimeSpan expiration, TimeSpan timeout = new TimeSpan())
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Touch(string id, GetAndTouchOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Touch(string id, Action<GetAndTouchOptions> options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IMutationOperation Upsert<T>(IReadResult<T> readResult)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IMutationOperation Insert<T>(IReadResult<T> readResult)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IMutationOperation Replace<T>(IReadResult<T> readResult)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IMutationOperation Remove<T>(IReadResult<T> readResult)
-        {
-            throw new NotImplementedException();
-        }
-
-        [Obsolete]
-        public IFetchOperation<T> Get<T>(string key)
-        {
-            return new Get<T>(this)
-            {
-                Converter = new DefaultConverter(),
-                Transcoder = new DefaultTranscoder(new DefaultConverter()),
-                Opaque = SequenceGenerator.GetNext(),
-                Key = key
-            };
         }
 
         [Obsolete]

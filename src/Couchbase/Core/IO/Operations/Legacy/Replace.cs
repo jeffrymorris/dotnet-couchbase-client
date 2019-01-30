@@ -1,6 +1,4 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     /// <summary>
     /// Replace a key in the database, failing if the key does not exist.
@@ -8,28 +6,17 @@ namespace Couchbase.Core.IO.Operations.Legacy
     /// <typeparam name="T"></typeparam>
     internal sealed class Replace<T> : MutationOperationBase<T>
     {
-        public Replace(string key, T value, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, value, vBucket, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-        }
-
-        private Replace(string key, T value, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, value, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
-        public Replace(string key, T value, ulong cas, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, value, vBucket, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-            Cas = cas;
-        }
-
         public override OpCode OpCode => OpCode.Replace;
 
         public override IOperation Clone()
         {
-            var cloned = new Replace<T>(Key, RawValue, VBucket, Transcoder, Opaque, Timeout)
+            var cloned = new Replace<T>
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

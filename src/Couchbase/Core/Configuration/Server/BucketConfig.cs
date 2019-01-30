@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Couchbase.Core.Configuration.Server
 {
@@ -56,7 +54,7 @@ namespace Couchbase.Core.Configuration.Server
     }
 
     //Root object
-    public class ClusterMap
+    public class BucketConfig
     {
         public int rev { get; set; }
         public string name { get; set; }

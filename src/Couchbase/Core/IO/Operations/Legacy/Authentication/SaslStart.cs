@@ -1,5 +1,4 @@
 using System;
-using Couchbase.Core.Transcoders;
 
 namespace Couchbase.Core.IO.Operations.Legacy.Authentication
 {
@@ -8,37 +7,6 @@ namespace Couchbase.Core.IO.Operations.Legacy.Authentication
     /// </summary>
     internal class SaslStart : OperationBase<string>
     {
-        /// <summary>
-        ///     Creates an instance of the <see cref="SaslStart" />" object for starting the SASL authentication process.
-        /// </summary>
-        /// <param name="key">The SASL Mechanism to use: PLAIN or CRAM-MD5.</param>
-        /// <param name="value"></param>
-        /// <param name="vBucket"></param>
-        /// <param name="transcoder"></param>
-        /// <param name="opaque"></param>
-        /// <param name="timeout"></param>
-        public SaslStart(string key, string value, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, value, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
-        public SaslStart(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of the <see cref="SaslStart"/>" object for starting the SASL authentication process.
-        /// </summary>
-        /// <param name="key">The SASL Mechanism to use: PLAIN or CRAM-MD5.</param>
-        /// <param name="value"></param>
-        /// <param name="transcoder"></param>
-        /// <param name="timeout"></param>
-        public SaslStart(string key, string value, ITypeTranscoder transcoder, uint timeout)
-            : base(key, value, null, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-        }
-
         public override OpCode OpCode => OpCode.SaslStart;
 
         public override byte[] CreateExtras()

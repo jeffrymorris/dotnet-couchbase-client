@@ -1,25 +1,11 @@
-﻿using Couchbase.Core.Transcoders;
-
+﻿
 namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal sealed class Decrement : MutationOperationBase<ulong>
     {
-        public Decrement(string key, ulong initial, ulong delta, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-            Delta = delta;
-            Initial = initial;
-        }
+        public ulong Delta { get; set; } = 1;
 
-        private Decrement(string key, ulong initial, ulong delta, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, initial, vBucket, transcoder, opaque, timeout)
-        {
-            Delta = delta;
-            Initial = initial;
-        }
-        public ulong Delta { get; }
-
-        public ulong Initial { get; }
+        public ulong Initial { get; set; } = 1;
 
         public override OpCode OpCode => OpCode.Decrement;
 
@@ -39,8 +25,15 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new Decrement(Key, Initial, Delta, VBucket, Transcoder, Opaque, Timeout)
+            var cloned = new Decrement
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
+                Initial = Initial,
+                Delta = Delta,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

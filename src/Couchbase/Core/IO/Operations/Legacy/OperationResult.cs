@@ -34,7 +34,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
         /// <summary>
         /// The 'Check and Set' or 'CAS' value for enforcing optimistic concurrency.
         /// </summary>
-        public ulong Cas { get; internal set; }
+        public ulong Cas { get; set; }
 
         public TimeSpan? Expiration { get; }
 

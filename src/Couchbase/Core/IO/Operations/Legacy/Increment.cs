@@ -1,26 +1,10 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class Increment : MutationOperationBase<ulong>
     {
-        public Increment(string key, ulong initial, ulong delta, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-            Delta = delta;
-            Initial = initial;
-        }
+        public ulong Delta { get; set; } = 1;
 
-        private Increment(string key, ulong initial, ulong delta, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, initial, vBucket, transcoder, opaque, timeout)
-        {
-            Delta = delta;
-            Initial = initial;
-        }
-
-        public ulong Delta { get; }
-
-        public ulong Initial { get; }
+        public ulong Initial { get; set; } = 1;
 
         public override OpCode OpCode => OpCode.Increment;
 
@@ -40,8 +24,15 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new Increment(Key, Initial, Delta, VBucket, Transcoder, Opaque, Timeout)
+            var cloned = new Increment
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
+                Delta = Delta,
+                Initial = Initial,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

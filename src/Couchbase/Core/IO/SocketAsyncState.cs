@@ -15,18 +15,9 @@ namespace Couchbase.Core.IO
         /// </summary>
         public ResponseStatus Status { get; set; }
 
-
         public IPEndPoint EndPoint { get; set; }
 
-        public int SendOffset { get; set; }
-
-        public int BytesSent { get; set; }
-
         public MemoryStream Data { get; set; }
-
-        public int BytesReceived { get; set; }
-
-        public int BodyLength { get; set; }
 
         public uint Opaque { get; set; }
 
@@ -34,13 +25,7 @@ namespace Couchbase.Core.IO
 
         public string LocalEndpoint { get; set; }
 
-        public int Timeout { get; set; }
-
         public ErrorMap ErrorMap { get; set; }
-
-        public int BufferOffset { get; private set; }
-
-        public int BufferLength { get; private set; }
 
         public Exception Exception { get; set; }
 
@@ -48,8 +33,7 @@ namespace Couchbase.Core.IO
 
         public void Dispose()
         {
-            if (Data != null) Data.Dispose();
-           // DispatchSpan?.Finish();
+            Data?.Dispose();
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
         /// <summary>
         /// The value of the key retrieved from Couchbase Server.
         /// </summary>
-        public T Value { get; internal set; }
+        public T Content { get; internal set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -25,7 +25,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
             string content = null;
             try
             {
-                content = JsonConvert.SerializeObject(Value, Formatting.None);
+                content = JsonConvert.SerializeObject(Content, Formatting.None);
             }
             catch
             {
@@ -34,7 +34,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return new JObject(
                 new JProperty("id", Id),
                 new JProperty("cas", Cas),
-                new JProperty("token", Token != null ? Token.ToString() : null),
+                new JProperty("token", Token?.ToString()),
                 new JProperty("content", content)).
                 ToString(Formatting.None);
         }

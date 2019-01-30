@@ -1,16 +1,10 @@
-﻿using Couchbase.Core.Transcoders;
-
-namespace Couchbase.Core.IO.Operations.Legacy.Errors
+﻿namespace Couchbase.Core.IO.Operations.Legacy.Errors
 {
     internal class GetErrorMap : OperationBase<ErrorMap>
     {
         private const int DefaultVersion = 1; // will be configurable at some point
 
         public ErrorMap ErrorMap { get; set; }
-
-        public GetErrorMap(ITypeTranscoder transcoder, uint timeout)
-            : base(null, null, transcoder, timeout)
-        { }
 
         public override byte[] CreateKey()
         {
@@ -27,14 +21,6 @@ namespace Couchbase.Core.IO.Operations.Legacy.Errors
             var body = new byte[2];
             Converter.FromInt16(DefaultVersion, body, 0);
             return body;
-        }
-
-        public override IOperation Clone()
-        {
-            return new GetErrorMap(Transcoder, Timeout)
-            {
-                ErrorCode = ErrorCode
-            };
         }
 
         public override void ReadExtras(byte[] buffer)

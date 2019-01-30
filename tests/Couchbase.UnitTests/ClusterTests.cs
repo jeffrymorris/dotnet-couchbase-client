@@ -14,7 +14,7 @@ namespace Couchbase.UnitTests
         {
 
             var cluster = new Cluster();
-            await cluster.ConnectAsync(new Configuration
+            await cluster.Initialize(new Configuration
             {
                 UserName = "Administrator",
                 Password = "password"
@@ -27,14 +27,14 @@ namespace Couchbase.UnitTests
 
             var cluster = new Cluster();
             await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-                await cluster.ConnectAsync(new Configuration()).ConfigureAwait(false));
+                await cluster.Initialize(new Configuration()).ConfigureAwait(false));
         }
 
         [Fact]
         public async Task GetBucket_Returns_Bucket()
         {
             var cluster = new Cluster();
-            await cluster.ConnectAsync(new Configuration
+            await cluster.Initialize(new Configuration
             {
                 UserName = "Administrator",
                 Password = "password"
@@ -48,7 +48,7 @@ namespace Couchbase.UnitTests
         public async Task Test_Query()
         {
             var cluster = new Cluster();
-            await cluster.ConnectAsync(new Configuration
+            await cluster.Initialize(new Configuration
             {
                 UserName = "Administrator",
                 Password = "password"

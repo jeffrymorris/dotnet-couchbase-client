@@ -1,5 +1,4 @@
 ﻿using System;
-using Couchbase.Core.Transcoders;
 
 namespace Couchbase.Core.IO.Operations.Legacy.Authentication
 {
@@ -8,21 +7,6 @@ namespace Couchbase.Core.IO.Operations.Legacy.Authentication
     /// </summary>
     internal class SaslStep : SaslStart
     {
-        public SaslStep(string key, string value, ITypeTranscoder transcoder, uint timeout)
-            : base(key, value, null, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-        }
-
-        public SaslStep(string key, string value, ITypeTranscoder transcoder, IVBucket vBucket, uint opaque, uint timeout)
-            : base(key, value, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
-        public SaslStep(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
         public override byte[] CreateExtras()
         {
             Format = DataFormat.String;

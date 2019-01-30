@@ -1,9 +1,10 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using Couchbase.Core.IO.Converters;
 using Couchbase.Core.IO.Operations;
 using Couchbase.Core.IO.Transcoders;
+using SaslStart = Couchbase.Core.IO.Operations.Legacy.Authentication.SaslStart;
+using SequenceGenerator = Couchbase.Core.IO.Operations.Legacy.SequenceGenerator;
 
 namespace Couchbase.Core.IO.Authentication
 {
@@ -25,7 +26,7 @@ namespace Couchbase.Core.IO.Authentication
             var op = new SaslStart
             {
                 Key = MechanismType,
-                Body =  GetAuthData(Username, Password),
+                Content =  GetAuthData(Username, Password),
                 Opaque = SequenceGenerator.GetNext(),
                 Converter = new DefaultConverter(),
                 Transcoder = new DefaultTranscoder(new DefaultConverter()),

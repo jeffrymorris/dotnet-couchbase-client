@@ -1,5 +1,4 @@
-﻿using System;
-using Couchbase.Core.IO.Serializers;
+﻿using Couchbase.Core.IO.Serializers;
 
 namespace Couchbase
 {
@@ -8,5 +7,7 @@ namespace Couchbase
         T ContentAs<T>();
 
         T ContentAs<T>(ITypeSerializer serializer);
+
+        bool HasValue { get; }
     }
 }

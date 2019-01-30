@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Core.IO.Converters;
@@ -22,7 +21,6 @@ namespace Couchbase.Core.IO.Connections
         private readonly object _syncObj = new object();
         protected volatile bool Disposed;
         protected ILogger Log;
-        private EndPoint _localEndPoint;
 
         public MultiplexingConnection(IConnectionPool connectionPool, Socket socket, IByteConverter converter)
         {
@@ -46,6 +44,7 @@ namespace Couchbase.Core.IO.Connections
         }
 
         public Guid Identity { get; set; }
+
         public ulong ConnectionId { get; }
 
         public IConnectionPool ConnectionPool { get; set; }
@@ -55,12 +54,15 @@ namespace Couchbase.Core.IO.Connections
         public Socket Socket { get; set; }
 
         public bool IsConnected { get; }
+
         public EndPoint EndPoint { get; set; }
 
-        EndPoint IConnection.LocalEndPoint => _localEndPoint;
+        EndPoint IConnection.LocalEndPoint { get; }
 
         public string ContextId { get; }
+
         public bool IsAuthenticated { get; set; }
+
         public bool IsSecure { get; }
 
         /// <summary>
@@ -87,7 +89,6 @@ namespace Couchbase.Core.IO.Connections
                 EndPoint = (IPEndPoint)EndPoint,
                 ConnectionId = ContextId,
                 ErrorMap = errorMap,
-                Timeout = 75000,
                 LocalEndpoint = LocalEndPoint.ToString()
             };
 

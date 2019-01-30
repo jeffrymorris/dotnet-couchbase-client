@@ -1,20 +1,9 @@
 ﻿using System;
-using Couchbase.Core.Transcoders;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class Get<T> : OperationBase<T>
     {
-        public Get(string key, IVBucket vBucket,  ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
-        protected Get(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, default(T), vBucket, transcoder,  opaque, timeout)
-        {
-        }
-
         public override OpCode OpCode => OpCode.Get;
 
         public override byte[] Write()
@@ -23,9 +12,8 @@ namespace Couchbase.Core.IO.Operations.Legacy
             var header = CreateHeader(new byte[0], new byte[0], key);
 
             var buffer = new byte[key.GetLengthSafe() + header.GetLengthSafe()];
-
-            System.Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-            System.Buffer.BlockCopy(key, 0, buffer, header.Length, key.Length);
+            Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
+            Buffer.BlockCopy(key, 0, buffer, header.Length, key.Length);
 
             return buffer;
         }
@@ -57,8 +45,13 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new Get<T>(Key, VBucket, Transcoder, Opaque, Timeout)
+            var cloned = new Get<T>
             {
+                Key = Key,
+                Content = Content,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,

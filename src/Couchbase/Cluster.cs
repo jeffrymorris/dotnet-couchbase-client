@@ -24,6 +24,11 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
+        public Task Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IBucket> this[string name] => throw new NotImplementedException();
 
         public Task<IBucket> Bucket(string name)
@@ -72,7 +77,7 @@ namespace Couchbase
         }
 
         [Obsolete("Temp")]
-        public async Task ConnectAsync(IConfiguration config)
+        public async Task Initialize(IConfiguration config)
         {
             if (string.IsNullOrWhiteSpace(config.Password) || string.IsNullOrWhiteSpace(config.UserName))
             {
@@ -91,8 +96,7 @@ namespace Couchbase
                 foreach (var configServer in _configuration.Servers)
                 {
                     var bucket = new CouchbaseBucket(this, configBucket);
-                    //await bucket.BootstrapAsync(configServer).ConfigureAwait(false);
-                    bucket.LoadManifest("manifest.json"); //just for testing UI - guts coming soon
+                    await bucket.BootstrapAsync(configServer, _configuration).ConfigureAwait(false);
                     _bucketRefs.TryAdd(configBucket, bucket);
                     return;
                 }

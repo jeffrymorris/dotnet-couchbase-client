@@ -1,5 +1,6 @@
 ﻿using System;
-using Couchbase.Core.Transcoders;
+using Couchbase.Utils;
+using Newtonsoft.Json;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
@@ -7,18 +8,13 @@ namespace Couchbase.Core.IO.Operations.Legacy
     {
         public override OpCode OpCode => OpCode.Helo;
 
-        public Hello(string key, short[] value, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, value, null, transcoder, opaque, timeout)
-        {
-        }
-
         public override byte[] CreateBody()
         {
-            var body = new byte[Value.Length * 2];
-            for (var i = 0; i < Value.Length; i++)
+            var body = new byte[Content.Length * 2];
+            for (var i = 0; i < Content.Length; i++)
             {
                 var offset = i * 2;
-                Converter.FromInt16(Value[i], body, offset);
+                Converter.FromInt16(Content[i], body, offset);
             }
 
             return body;
@@ -58,9 +54,21 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return result;
         }
 
-        public override bool RequiresKey
+        public override bool RequiresKey => true;
+
+        internal static string BuildHelloKey(ulong connectionId)
         {
-            get { return true; }
+            var agent = ClientIdentifier.GetClientDescription();
+            if (agent.Length > 200)
+            {
+                agent = agent.Substring(0, 200);
+            }
+
+            return JsonConvert.SerializeObject(new
+            {
+                i = ClientIdentifier.FormatConnectionString(connectionId),
+                a = agent
+            }, Formatting.None);
         }
     }
 }

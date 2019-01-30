@@ -1,14 +1,9 @@
-﻿using Couchbase.Core.Transcoders;
+﻿using System.Threading;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class Touch : OperationBase
     {
-        public Touch(string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-        }
-
         public override byte[] CreateExtras()
         {
             var extras = new byte[4];
@@ -36,8 +31,12 @@ namespace Couchbase.Core.IO.Operations.Legacy
 
         public override IOperation Clone()
         {
-            var cloned = new Touch(Key, VBucket, Transcoder, Timeout)
+            var cloned = new Touch
             {
+                Key = Key,
+                Transcoder = Transcoder,
+                VBucketId = VBucketId,
+                Opaque = Opaque,
                 Attempts = Attempts,
                 Cas = Cas,
                 CreationTime = CreationTime,
@@ -49,10 +48,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return cloned;
         }
 
-        public override bool RequiresKey
-        {
-            get { return true; }
-        }
+        public override bool RequiresKey => true;
     }
 }
 
