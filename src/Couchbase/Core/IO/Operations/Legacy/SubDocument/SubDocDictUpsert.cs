@@ -1,23 +1,8 @@
-﻿using Couchbase.Core;
-using Couchbase.Core.IO.Operations.Legacy;
-using Couchbase.Core.Transcoders;
-
-namespace Couchbase.IO.Operations.SubDocument
+﻿namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {
     internal class SubDocDictUpsert<T> : SubDocSingularMutationBase<T>
     {
-        public SubDocDictUpsert(MutateInBuilder<T> builder, string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(builder, key, vBucket, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-            CurrentSpec = builder.FirstSpec();
-            Path = CurrentSpec.Path;
-            Cas = builder.Cas;
-        }
-
-        public override OpCode OpCode
-        {
-            get { return OpCode.SubDictUpsert; }
-        }
+        public override OpCode OpCode => OpCode.SubDictUpsert;
 
         /// <summary>
         /// Clones this instance.
@@ -25,7 +10,7 @@ namespace Couchbase.IO.Operations.SubDocument
         /// <returns></returns>
         public override IOperation Clone()
         {
-            return new SubDocDictUpsert<T>((MutateInBuilder<T>)((MutateInBuilder<T>)Builder).Clone(), Key, VBucket, Transcoder, Timeout)
+            return new SubDocDictUpsert<T>
             {
                 Attempts = Attempts,
                 Cas = Cas,

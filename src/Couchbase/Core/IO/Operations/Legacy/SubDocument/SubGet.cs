@@ -1,24 +1,8 @@
-﻿using System.Linq;
-using Couchbase.Core;
-using Couchbase.Core.IO.Operations.Legacy;
-using Couchbase.Core.Serialization;
-using Couchbase.Core.Transcoders;
-
-namespace Couchbase.IO.Operations.SubDocument
+﻿namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {
     internal class SubGet<T> : SubDocSingularLookupBase<T>
     {
-        public SubGet(LookupInBuilder<T> builder, string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(builder, key, vBucket, transcoder, timeout)
-        {
-            CurrentSpec = builder.FirstSpec();
-            Path = CurrentSpec.Path;
-        }
-
-        public override OpCode OpCode
-        {
-            get { return OpCode.SubGet; }
-        }
+        public override OpCode OpCode => OpCode.SubGet;
 
         /// <summary>
         /// Clones this instance.
@@ -26,7 +10,7 @@ namespace Couchbase.IO.Operations.SubDocument
         /// <returns></returns>
         public override IOperation Clone()
         {
-            return new SubGet<T>((LookupInBuilder<T>)((LookupInBuilder<T>)Builder).Clone(), Key, VBucket, Transcoder, Timeout)
+            return new SubGet<T>
             {
                 Attempts = Attempts,
                 Cas = Cas,

@@ -1,49 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Couchbase.Core;
-using Couchbase.Core.IO.SubDocument;
-using Couchbase.Core.Serialization;
-using Couchbase.Core.Transcoders;
+using Couchbase.Core.IO.Operations.SubDocument;
+using Couchbase.Core.IO.Serializers;
 using Couchbase.Utils;
 
-namespace Couchbase.IO.Operations.SubDocument
+namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {
     internal abstract class SubDocSingularBase<T> : OperationBase<T>
     {
         private short _pathLength;
         protected ITypeSerializerProvider Builder;
         protected OperationSpec CurrentSpec;
-
-        protected SubDocSingularBase(ISubDocBuilder<T> builder, string key, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(key, default(T), vBucket, transcoder, opaque, timeout)
-        {
-            Builder = builder;
-
-            //override the default timeout if provided by the builder
-            SetTimeoutIfNotDefault(builder);
-        }
-
-        protected SubDocSingularBase(ISubDocBuilder<T> builder, string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-            Builder = builder;
-
-            //override the default timeout if provided by the builder
-            SetTimeoutIfNotDefault(builder);
-        }
-
-        /// <summary>
-        /// Sets the timeout with the value from the builder if it was changed by calling WithTimeout()
-        /// </summary>
-        /// <param name="builder">The builder.</param>
-        private void SetTimeoutIfNotDefault(ISubDocBuilder<T> builder)
-        {
-            if (builder.Timeout.HasValue)
-            {
-                Timeout = builder.Timeout.Value.GetSeconds();
-            }
-        }
 
         public string Path { get; protected set; }
 
@@ -57,11 +25,6 @@ namespace Couchbase.IO.Operations.SubDocument
                 }
                 return _pathLength;
             }
-        }
-
-        public override byte[] AllocateBuffer(int length)
-        {
-            return new byte[length];
         }
 
         public override short ExtrasLength
@@ -189,7 +152,7 @@ namespace Couchbase.IO.Operations.SubDocument
 
         public override void WriteBody(byte[] buffer, int offset)
         {
-            System.Buffer.BlockCopy(BodyBytes, 0, buffer, offset, BodyLength);
+            Buffer.BlockCopy(BodyBytes, 0, buffer, offset, BodyLength);
         }
 
         public override T GetValue()
@@ -204,7 +167,7 @@ namespace Couchbase.IO.Operations.SubDocument
                     var offset = Header.BodyOffset;
                     CurrentSpec.ValueIsJson = buffer.IsJson(offset, TotalLength-1);
                     CurrentSpec.Bytes = new byte[TotalLength-offset];
-                    System.Buffer.BlockCopy(buffer, offset, CurrentSpec.Bytes, 0, TotalLength-offset);
+                    Buffer.BlockCopy(buffer, offset, CurrentSpec.Bytes, 0, TotalLength-offset);
                 }
                 catch (Exception e)
                 {

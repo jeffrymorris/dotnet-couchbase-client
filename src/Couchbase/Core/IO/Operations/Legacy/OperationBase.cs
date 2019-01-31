@@ -512,6 +512,34 @@ namespace Couchbase.Core.IO.Operations.Legacy
         public virtual bool RequiresKey => true;
 
         public string BucketName { get; set; }
+
+        public virtual void WriteHeader(byte[] buffer)
+        {
+            throw new NotImplementedException();
+        }
+
+        #region Temp add for sub doc - should refactor
+ 
+        public virtual void WriteBody(byte[] buffer, int offset)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void WriteExtras(byte[] buffer, int offset)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void WriteKey(byte[] buffer, int offset)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void WritePath(byte[] buffer, int offset)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }
 

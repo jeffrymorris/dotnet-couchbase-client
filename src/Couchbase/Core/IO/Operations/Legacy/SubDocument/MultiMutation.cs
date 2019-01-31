@@ -1,31 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Couchbase.Core;
-using Couchbase.Core.IO.Operations.Legacy;
-using Couchbase.Core.IO.SubDocument;
-using Couchbase.Core.Transcoders;
-using Couchbase.IO.Utils;
+using System.Threading;
+using Couchbase.Core.IO.Operations.SubDocument;
+using Couchbase.Core.IO.Transcoders;
 using Couchbase.Utils;
 
-namespace Couchbase.IO.Operations.SubDocument
+namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {
     internal class MultiMutation<T> : OperationBase<T>, IEquatable<MultiMutation<T>>
     {
         private readonly MutateInBuilder<T> _builder;
         private readonly IList<OperationSpec> _lookupCommands = new List<OperationSpec>();
 
-        public MultiMutation(string key, MutateInBuilder<T> mutateInBuilder, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-            _builder = mutateInBuilder;
-            Cas = _builder.Cas;
-        }
-
         public override byte[] Write()
         {
             var totalLength = OperationHeader.Length + KeyLength + BodyLength;
-            var buffer = AllocateBuffer(totalLength);
+            var buffer = new byte[totalLength];
 
             WriteHeader(buffer);
             WriteKey(buffer, OperationHeader.Length);
@@ -40,9 +31,9 @@ namespace Couchbase.IO.Operations.SubDocument
             Converter.FromInt16(KeyLength, buffer, HeaderOffsets.KeyLength);//2-3
             Converter.FromByte((byte)ExtrasLength, buffer, HeaderOffsets.ExtrasLength);  //4
             //5 datatype?
-            if (VBucket != null)
+            if (VBucketId.HasValue)
             {
-                Converter.FromInt16((short)VBucket.Index, buffer, HeaderOffsets.VBucket);//6-7
+                Converter.FromInt16(VBucketId.Value, buffer, HeaderOffsets.VBucket);//6-7
             }
 
             Converter.FromInt32(ExtrasLength + KeyLength + BodyLength, buffer, HeaderOffsets.BodyLength);//8-11
@@ -195,7 +186,7 @@ namespace Couchbase.IO.Operations.SubDocument
         /// <returns></returns>
         public override IOperation Clone()
         {
-            return new MultiMutation<T>(Key, (MutateInBuilder<T>)_builder.Clone(), VBucket, Transcoder, Timeout)
+            return new MultiMutation<T>
             {
                 Attempts = Attempts,
                 Cas = Cas,

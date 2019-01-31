@@ -1,23 +1,9 @@
-using Couchbase.Core;
-using Couchbase.Core.IO.Operations.Legacy;
-using Couchbase.Core.Transcoders;
-using Couchbase.IO.Utils;
 using Couchbase.Utils;
 
-namespace Couchbase.IO.Operations.SubDocument
+namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {
     internal abstract class SubDocSingularMutationBase<T> : SubDocSingularBase<T>
     {
-        protected SubDocSingularMutationBase(ISubDocBuilder<T> builder, string key, IVBucket vBucket, ITypeTranscoder transcoder, uint opaque, uint timeout)
-            : base(builder, key, vBucket, transcoder, opaque, timeout)
-        {
-        }
-
-        protected SubDocSingularMutationBase(ISubDocBuilder<T> builder, string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(builder, key, vBucket, transcoder, timeout)
-        {
-        }
-
         public override void WriteHeader(byte[] buffer)
         {
             Converter.FromByte((byte)Magic.Request, buffer, HeaderOffsets.Magic);//0
@@ -25,9 +11,9 @@ namespace Couchbase.IO.Operations.SubDocument
             Converter.FromInt16(KeyLength, buffer, HeaderOffsets.KeyLength);//2-3
             Converter.FromByte((byte)ExtrasLength, buffer, HeaderOffsets.ExtrasLength);  //4
             //5 datatype?
-            if (VBucket != null)
+            if (VBucketId.HasValue)
             {
-                Converter.FromInt16((short)VBucket.Index, buffer, HeaderOffsets.VBucket);//6-7
+                Converter.FromInt16((short)VBucketId, buffer, HeaderOffsets.VBucket);//6-7
             }
 
             Converter.FromInt32(ExtrasLength + KeyLength + BodyLength + PathLength, buffer, HeaderOffsets.BodyLength);//8-11
@@ -38,7 +24,7 @@ namespace Couchbase.IO.Operations.SubDocument
         public override byte[] Write()
         {
             var totalLength = OperationHeader.Length + KeyLength + ExtrasLength + PathLength + BodyLength;
-            var buffer = AllocateBuffer(totalLength);
+            var buffer = new byte[totalLength];
 
             WriteHeader(buffer);
             WriteExtras(buffer, OperationHeader.Length);
