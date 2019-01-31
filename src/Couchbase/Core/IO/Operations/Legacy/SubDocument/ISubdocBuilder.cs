@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
+using Couchbase.Core.IO.Serializers;
 
 namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {

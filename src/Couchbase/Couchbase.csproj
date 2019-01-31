@@ -6,15 +6,12 @@
 
   <ItemGroup>
     <Compile Remove="Core\IO\Errors\**" />
-    <Compile Remove="Core\IO\Operations\Legacy\SubDocument\**" />
     <Compile Remove="Core\Logging\**" />
     <Compile Remove="Core\Tracing\**" />
     <EmbeddedResource Remove="Core\IO\Errors\**" />
-    <EmbeddedResource Remove="Core\IO\Operations\Legacy\SubDocument\**" />
     <EmbeddedResource Remove="Core\Logging\**" />
     <EmbeddedResource Remove="Core\Tracing\**" />
     <None Remove="Core\IO\Errors\**" />
-    <None Remove="Core\IO\Operations\Legacy\SubDocument\**" />
     <None Remove="Core\Logging\**" />
     <None Remove="Core\Tracing\**" />
   </ItemGroup>

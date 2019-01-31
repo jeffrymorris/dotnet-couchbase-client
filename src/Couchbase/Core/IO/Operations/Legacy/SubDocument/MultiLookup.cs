@@ -1,28 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using Couchbase.Core.IO.Operations.SubDocument;
-using Couchbase.Core.Transcoders;
-using Couchbase.IO.Operations;
 using Couchbase.Utils;
 
 namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {
     internal class MultiLookup<T> : OperationBase<T>, IEquatable<MultiLookup<T>>
     {
-        private readonly ILookupInBuilder<T> _builder;
-        private readonly IList<OperationSpec> _lookupCommands = new List<OperationSpec>();
+        public LookupInBuilder<T> Builder { get; set; }
 
-        public MultiLookup(string key, ILookupInBuilder<T> builder, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(key, vBucket, transcoder, timeout)
-        {
-            _builder = builder;
-        }
+        private readonly IList<OperationSpec> _lookupCommands = new List<OperationSpec>();
 
         public override byte[] Write()
         {
             var totalLength = OperationHeader.Length + KeyLength + BodyLength;
-            var buffer = AllocateBuffer(totalLength);
+            var buffer = new byte[totalLength];
 
             WriteHeader(buffer);
             WriteKey(buffer, OperationHeader.Length);
@@ -32,14 +26,14 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 
         public override void WriteHeader(byte[] buffer)
         {
-            Converter.FromByte((byte)Couchbase.IO.Operations.Magic.Request, buffer, HeaderOffsets.Magic);//0
+            Converter.FromByte((byte)Magic.Request, buffer, HeaderOffsets.Magic);//0
             Converter.FromByte((byte)OpCode, buffer, HeaderOffsets.Opcode);//1
             Converter.FromInt16(KeyLength, buffer, HeaderOffsets.KeyLength);//2-3
             Converter.FromByte((byte)ExtrasLength, buffer, HeaderOffsets.ExtrasLength);  //4
             //5 datatype?
-            if (VBucket != null)
+            if (VBucketId.HasValue)
             {
-                Converter.FromInt16((short)VBucket.Index, buffer, HeaderOffsets.VBucket);//6-7
+                Converter.FromInt16((short)VBucketId, buffer, HeaderOffsets.VBucket);//6-7
             }
 
             Converter.FromInt32(ExtrasLength + KeyLength + BodyLength, buffer, HeaderOffsets.BodyLength);//8-11
@@ -50,7 +44,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
         public override byte[] CreateBody()
         {
             var buffer = new List<byte>();
-            foreach (var lookup in _builder)
+            foreach (var lookup in Builder)
             {
                 var opcode = (byte) lookup.OpCode;
                 var flags = (byte) lookup.PathFlags;
@@ -78,10 +72,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
             System.Buffer.BlockCopy(BodyBytes, 0, buffer, offset, BodyLength);
         }
 
-        public override Couchbase.IO.Operations.OpCode OpCode
-        {
-            get { return Couchbase.IO.Operations.OpCode.MultiLookup; }
-        }
+        public override OpCode OpCode => OpCode.MultiLookup;
 
         public override T GetValue()
         {
@@ -113,7 +104,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 
         public override IOperationResult<T> GetResultWithValue()
         {
-            var result = new DocumentFragment<T>(_builder);
+            var result = new DocumentFragment<T>(Builder);
             try
             {
                 result.Success = GetSuccess();
@@ -154,7 +145,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
         /// <returns></returns>
         public override IOperation Clone()
         {
-            return new MultiLookup<T>(Key, _builder.Clone(), VBucket, Transcoder, Timeout)
+            return new MultiLookup<T>
             {
                 Attempts = Attempts,
                 Cas = Cas,
@@ -185,7 +176,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
         {
             if (other == null) return false;
             if (Cas == other.Cas &&
-                _builder.Equals(other._builder) &&
+                Builder.Equals(other.Builder) &&
                 Key == other.Key)
             {
                 return true;

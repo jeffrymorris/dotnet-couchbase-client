@@ -208,7 +208,7 @@ namespace Couchbase.UnitTests
                 }));
             }
 
-           Task.WhenAll(items);
+           await Task.WhenAll(items);
         }
 
         [Fact]

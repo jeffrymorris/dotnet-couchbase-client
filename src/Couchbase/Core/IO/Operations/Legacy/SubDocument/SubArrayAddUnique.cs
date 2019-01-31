@@ -1,23 +1,10 @@
-﻿using Couchbase.Core;
-using Couchbase.Core.IO.Operations.Legacy;
-using Couchbase.Core.Transcoders;
+﻿using Couchbase.Core.IO.Transcoders;
 
-namespace Couchbase.IO.Operations.SubDocument
+namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {
     internal class SubArrayAddUnique<T> : SubDocSingularMutationBase<T>
     {
-        public SubArrayAddUnique(MutateInBuilder<T> builder, string key, IVBucket vBucket, ITypeTranscoder transcoder, uint timeout)
-            : base(builder, key, vBucket, transcoder, SequenceGenerator.GetNext(), timeout)
-        {
-            CurrentSpec = builder.FirstSpec();
-            Path = CurrentSpec.Path;
-            Cas = builder.Cas;
-        }
-
-        public override OpCode OpCode
-        {
-            get { return OpCode.SubArrayAddUnique; }
-        }
+        public override OpCode OpCode => OpCode.SubArrayAddUnique;
 
         /// <summary>
         /// Clones this instance.
@@ -25,7 +12,7 @@ namespace Couchbase.IO.Operations.SubDocument
         /// <returns></returns>
         public override IOperation Clone()
         {
-            return new SubArrayAddUnique<T>((MutateInBuilder<T>)((MutateInBuilder<T>)Builder).Clone(), Key, VBucket, Transcoder, Timeout)
+            return new SubArrayAddUnique<T>
             {
                 Attempts = Attempts,
                 Cas = Cas,
