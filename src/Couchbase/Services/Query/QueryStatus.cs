@@ -1,6 +1,19 @@
-﻿namespace Couchbase
+﻿namespace Couchbase.Services.Query
 {
-    public class QueryStatus
+    public enum QueryStatus
     {
+        Success,
+
+        Running,
+
+        Errors,
+
+        Completed,
+
+        Stopped,
+
+        Timeout,
+
+        Fatal
     }
 }

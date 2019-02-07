@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Couchbase.Core.Diagnostics;
+using Couchbase.Core.IO.HTTP;
 using Couchbase.Management;
 using Couchbase.Services.Analytics;
 using Couchbase.Services.Query;
@@ -14,6 +16,7 @@ namespace Couchbase
     {
         private readonly ConcurrentDictionary<string, IBucket> _bucketRefs = new ConcurrentDictionary<string, IBucket>();
         private IConfiguration _configuration;
+        private IQueryClient _queryClient;
 
         public Cluster()
         {
@@ -58,12 +61,27 @@ namespace Couchbase
 
         public Task<IQueryResult<T>> Query<T>(string statement, QueryParameter parameters = null, IQueryOptions options = null)
         {
-            throw new NotImplementedException();
+            if (_queryClient == null)
+            {
+                _queryClient = new QueryClient(_configuration);
+            }
+
+            //re-use older API by mapping parameters to new API
+            options?.AddNamedParameter(parameters?.NamedParameters.ToArray());
+            options?.AddPositionalParameter(parameters?.PostionalParameters.ToArray());
+
+            return _queryClient.QueryAsync<T>(statement, options);
         }
 
         public Task<IQueryResult<T>> Query<T>(string statement, Action<QueryParameter> parameters = null, Action<IQueryOptions> options = null)
         {
-            throw new NotImplementedException();
+            var queryParameters = new QueryParameter();
+            parameters?.Invoke(queryParameters);
+
+            var queryOptions = new QueryOptions();
+            options?.Invoke(queryOptions);
+
+            return Query<T>(statement, queryParameters, queryOptions);
         }
 
         public Task<IAnalyticsResult> AnalyticsQuery<T>(string statement, IAnalyticsOptions options)

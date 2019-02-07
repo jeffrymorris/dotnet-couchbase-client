@@ -360,22 +360,22 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public Task<IMutationResult> MutateIn(string id, MutateInOps ops, MutateInOptions options = default(MutateInOptions))
+        public Task<IMutationResult> MutateIn(string id, MutateInSpec spec, MutateInOptions options = default(MutateInOptions))
         {
             throw new NotImplementedException();
         }
 
-        public Task<IMutationResult> MutateIn(string id, Action<MutateInOps> ops, Action<MutateInOptions> options = null)
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpec> ops, Action<MutateInOptions> options = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ILookupInResult> LookupIn(string id, LookupInOps ops, LookupInOptions options = default(LookupInOptions))
+        public Task<ILookupInResult> LookupIn(string id, LookupInSpec ops, LookupInOptions options = default(LookupInOptions))
         {
             throw new NotImplementedException();
         }
 
-        public Task<ILookupInResult> LookupIn(string id, Action<LookupInOps> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>))
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpec> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>))
         {
             throw new NotImplementedException();
         }

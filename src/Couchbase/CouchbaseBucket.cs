@@ -253,7 +253,6 @@ namespace Couchbase
         public async Task Send(IOperation op, TaskCompletionSource<byte[]> tcs)
         {
             await Connection.SendAsync(op.Write(), op.Completed).ConfigureAwait(false);
-            //await tcs.Task.ConfigureAwait(false);
         }
     }
 }

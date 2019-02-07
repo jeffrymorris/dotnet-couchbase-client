@@ -4,7 +4,7 @@ using Couchbase.Core.IO.Operations.SubDocument;
 
 namespace Couchbase
 {
-    public class LookupInOps
+    public class LookupInSpec
     {
         internal readonly Dictionary<string, OperationSpec> Specs = new Dictionary<string, OperationSpec>();
 
@@ -29,19 +29,19 @@ namespace Couchbase
             AddSpec(opCode, path, value, pathFlags);
         }
 
-        public LookupInOps Path(string path)
+        public LookupInSpec Path(string path)
         {
             AddSpec(OpCode.SubGet, path, false);
             return this;
         }
 
-        public LookupInOps Exists(string path)
+        public LookupInSpec Exists(string path)
         {
             AddSpec(OpCode.SubExist, path, false);
             return this;
         }
 
-        public LookupInOps XAttr(string path)
+        public LookupInSpec XAttr(string path)
         {
             AddSpec(OpCode.SubGet, path, true);
             return this;

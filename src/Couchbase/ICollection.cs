@@ -105,14 +105,14 @@ namespace Couchbase
 
         #region Sub ReadResult
 
-        Task<IMutationResult> MutateIn(string id, MutateInOps ops, MutateInOptions options = default(MutateInOptions));
+        Task<IMutationResult> MutateIn(string id, MutateInSpec spec, MutateInOptions options = default(MutateInOptions));
 
-        Task<IMutationResult> MutateIn(string id, Action<MutateInOps> ops, Action<MutateInOptions> options = null);
+        Task<IMutationResult> MutateIn(string id, Action<MutateInSpec> ops, Action<MutateInOptions> options = null);
 
         #endregion
         
-        Task<ILookupInResult> LookupIn(string id, LookupInOps ops, LookupInOptions options = default(LookupInOptions));
+        Task<ILookupInResult> LookupIn(string id, LookupInSpec ops, LookupInOptions options = default(LookupInOptions));
 
-        Task<ILookupInResult> LookupIn(string id, Action<LookupInOps> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>));
+        Task<ILookupInResult> LookupIn(string id, Action<LookupInSpec> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>));
     } 
 }

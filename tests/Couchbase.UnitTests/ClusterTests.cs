@@ -58,5 +58,29 @@ namespace Couchbase.UnitTests
                 parameter => parameter.Add("poo"), 
                 options => options.Encoding(Encoding.Utf8));
         }
+
+        [Fact]
+        public async Task Test_Query2()
+        {
+            var cluster = new Cluster();
+            await cluster.Initialize(new Configuration
+            {
+                UserName = "Administrator",
+                Password = "password"
+            }.WithServers(" http://10.143.192.101:8091").WithBucket("default")).ConfigureAwait(false);
+
+            var result = await cluster.Query<dynamic>("SELECT * FROM `default` WHERE type=$name;",
+                parameter =>
+            {
+                parameter.Add("name", "poo");
+            }).ConfigureAwait(false);
+
+            
+            foreach (var o in result)
+            {
+                
+            }
+            result.Dispose();
+        }
     }
 }
