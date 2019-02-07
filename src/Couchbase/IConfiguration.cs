@@ -30,5 +30,13 @@ namespace Couchbase
         bool UseSsl { get; set; }
         bool EnableTracing { get; set; }
         bool EnableMutationTokens { get; set; }
+
+        #region Dotnet Specific
+        bool Expect100Continue { get; set; }
+        bool EnableCertificateAuthentication { get; set; }
+        bool EnableCertificateRevocation { get; set; }
+        bool IgnoreRemoteCertificateNameMismatch { get; set; }
+        int MaxQueryConnectionsPerServer { get; set; }
+        #endregion
     }
 }

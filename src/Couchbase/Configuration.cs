@@ -69,6 +69,11 @@ namespace Couchbase
         public bool UseSsl { get; set; }
         public bool EnableTracing { get; set; }
         public bool EnableMutationTokens { get; set; }
+        public bool Expect100Continue { get; set; }
+        public bool EnableCertificateAuthentication { get; set; }
+        public bool EnableCertificateRevocation { get; set; }
+        public bool IgnoreRemoteCertificateNameMismatch { get; set; }
+        public int MaxQueryConnectionsPerServer { get; set; } = 10;
         public bool OrphanedResponseLoggingEnabled { get; set; }
     }
 }

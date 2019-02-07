@@ -22,6 +22,8 @@ namespace Couchbase
 
         Task<IClusterManager> ClusterManager();
 
+       // Task<IQueryResult<T>> Query<T>(string statement);
+
         Task<IQueryResult<T>> Query<T>(string statement, QueryParameter parameters = null, IQueryOptions options = null);
 
         Task<IQueryResult<T>> Query<T>(string statement, Action<QueryParameter> parameters = null,  Action<IQueryOptions> options = null);

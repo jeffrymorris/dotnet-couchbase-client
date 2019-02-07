@@ -222,5 +222,19 @@ namespace Couchbase.UnitTests
                 ops.ArrayAppend("anarray", new object[] {"a", 3, "c"}, true);
             }, options => options.Timeout(milliseconds:20));
         }
+
+        [Fact]
+        public async Task LookupIn_Test()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var collection = new CouchbaseCollection(mockBucket.Object, "0x0", "_default");
+
+            var result = await collection.LookupIn("1337", ops =>
+            {
+                ops.Path("path");
+                ops.XAttr("$document");
+            });
+
+        }
     }
 }
