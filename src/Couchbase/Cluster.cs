@@ -94,6 +94,12 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
+        public IQueryIndexes QueryIndexes { get; }
+        public IAnalyticsIndexes AnalyticsIndexes { get; }
+        public ISearchIndexes SearchIndexes { get; }
+        public IBucketManager Buckets { get; }
+        public IUserManager Users { get; }
+
         [Obsolete("Temp")]
         public async Task Initialize(IConfiguration config)
         {

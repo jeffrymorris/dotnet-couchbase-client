@@ -19,5 +19,7 @@ namespace Couchbase
         Task<IViewResult> ViewQuery<T>(string statement, IViewOptions options);
 
         Task<ISpatialViewResult> SpatialViewQuery<T>(string statement, ISpatialViewOptions options);
+
+        Task Flush();
     }
 }
