@@ -14,5 +14,7 @@ namespace Couchbase.Management
         Task Upsert(string bucketName, BucketManagerOptions options);
 
         Task Remove(string bucketName);
+        
+        Task Flush();
     }
 }
