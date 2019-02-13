@@ -31,5 +31,15 @@ namespace Couchbase
         Task<IAnalyticsResult> AnalyticsQuery<T>(string statement, IAnalyticsOptions options);
 
         Task<ISearchResult> SearchQuery<T>(ISearchQuery query, ISearchOptions options);
+
+        IQueryIndexes QueryIndexes { get; }
+
+        IAnalyticsIndexes AnalyticsIndexes { get; }
+
+        ISearchIndexes SearchIndexes { get; }
+
+        IBucketManager Buckets { get; }
+
+        IUserManager Users { get; }
     }
 }
