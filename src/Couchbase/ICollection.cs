@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -114,5 +114,7 @@ namespace Couchbase
         Task<ILookupInResult> LookupIn(string id, LookupInSpec ops, LookupInOptions options = default(LookupInOptions));
 
         Task<ILookupInResult> LookupIn(string id, Action<LookupInSpec> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>));
+
+        Task<ILookupInResult> LookupIn(string id, LookupInSpec[] specs, LookupInOptions options = default(LookupInOptions));
     } 
 }

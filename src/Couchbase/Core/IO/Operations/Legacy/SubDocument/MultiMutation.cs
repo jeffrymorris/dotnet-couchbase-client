@@ -1,34 +1,35 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 using Couchbase.Core.IO.Operations.SubDocument;
-using Couchbase.Core.IO.Transcoders;
 using Couchbase.Utils;
 
 namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 {
     internal class MultiMutation<T> : OperationBase<T>, IEquatable<MultiMutation<T>>
     {
-        private readonly MutateInBuilder<T> _builder;
+        public MutateInBuilder<T> Builder { get; set; }
         private readonly IList<OperationSpec> _lookupCommands = new List<OperationSpec>();
 
         public override byte[] Write()
         {
-            var totalLength = OperationHeader.Length + KeyLength + BodyLength;
+            var keyBytes = CreateKey();
+            var totalLength = OperationHeader.Length + keyBytes.Length + BodyLength;
             var buffer = new byte[totalLength];
 
             WriteHeader(buffer);
-            WriteKey(buffer, OperationHeader.Length);
-            WriteBody(buffer, OperationHeader.Length + KeyLength);
+            //WriteKey(buffer, OperationHeader.Length);
+            Buffer.BlockCopy(keyBytes, 0, buffer, OperationHeader.Length, keyBytes.Length);
+            WriteBody(buffer, OperationHeader.Length + keyBytes.Length);
             return buffer;
         }
 
         public override void WriteHeader(byte[] buffer)
         {
+            var keyBytes = CreateKey();
             Converter.FromByte((byte)Magic.Request, buffer, HeaderOffsets.Magic);//0
             Converter.FromByte((byte)OpCode, buffer, HeaderOffsets.Opcode);//1
-            Converter.FromInt16(KeyLength, buffer, HeaderOffsets.KeyLength);//2-3
+            Converter.FromInt16((short)keyBytes.Length, buffer, HeaderOffsets.KeyLength);//2-3
             Converter.FromByte((byte)ExtrasLength, buffer, HeaderOffsets.ExtrasLength);  //4
             //5 datatype?
             if (VBucketId.HasValue)
@@ -36,7 +37,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
                 Converter.FromInt16(VBucketId.Value, buffer, HeaderOffsets.VBucket);//6-7
             }
 
-            Converter.FromInt32(ExtrasLength + KeyLength + BodyLength, buffer, HeaderOffsets.BodyLength);//8-11
+            Converter.FromInt32(ExtrasLength + keyBytes.Length + BodyLength, buffer, HeaderOffsets.BodyLength);//8-11
             Converter.FromUInt32(Opaque, buffer, HeaderOffsets.Opaque);//12-15
             Converter.FromUInt64(Cas, buffer, HeaderOffsets.Cas);
         }
@@ -44,7 +45,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
         public override byte[] CreateBody()
         {
             var buffer = new List<byte>();
-            foreach (var mutate in _builder)
+            foreach (var mutate in Builder)
             {
                 var opcode = (byte)mutate.OpCode;
                 var flags = (byte) mutate.PathFlags;
@@ -77,7 +78,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 
         public override IOperationResult<T> GetResultWithValue()
         {
-            var result = new DocumentFragment<T>(_builder);
+            var result = new DocumentFragment<T>(Builder);
             try
             {
                 result.Success = GetSuccess();
@@ -209,7 +210,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
         {
             if (other == null) return false;
             if (Cas == other.Cas &&
-                _builder.Equals(other._builder) &&
+                Builder.Equals(other.Builder) &&
                 Key == other.Key)
             {
                 return true;

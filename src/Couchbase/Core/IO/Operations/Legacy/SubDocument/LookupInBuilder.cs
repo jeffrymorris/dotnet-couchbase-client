@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -33,8 +33,8 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
         /// </exception>
         internal LookupInBuilder(ISubdocInvoker invoker, Func<ITypeSerializer> serializer, string key)
         {
-            _invoker = invoker ?? throw new ArgumentNullException(nameof(invoker));
-            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            //_invoker = invoker ?? throw new ArgumentNullException(nameof(invoker));
+            //_serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             Key = key ?? throw new ArgumentNullException(nameof(key));
         }
 
