@@ -1,24 +1,29 @@
-﻿
 using System;
+using System.Collections.Generic;
 
 namespace Couchbase.Core.Utils
 {
     public static class Leb128
     {
-        public static byte[] Write(uint value, int size)
+        public static byte[] Write(uint value)
         {
-            var remaining = value >> 7;
-            var bytes = new byte[size];
-            var count = 0;
+            var bytes = new List<byte>();
 
-            while (remaining != 0)
+            do
             {
-                bytes[count++] = (byte) ((value & 0x7f) | 0x80);
-                value = remaining;
-                remaining = remaining >> 7;
-            }
-            bytes[count] = (byte) (value & 0x7f);
-            return bytes;
+                // get next 7 lower bits
+                var @byte = (byte) (value & 0x7f);
+                value >>= 7;
+
+                if (value != 0) // more bytes to come
+                {
+                    @byte ^= 0x80; // set highest bit
+                }
+
+                bytes.Add(@byte);
+            } while (value != 0);
+
+            return bytes.ToArray();
         }
 
         public static uint Read(byte[] bytes)

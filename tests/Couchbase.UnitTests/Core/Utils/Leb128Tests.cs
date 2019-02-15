@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System;
 using Couchbase.Core.Utils;
 using Xunit;
 using Xunit.Abstractions;
@@ -16,13 +15,18 @@ namespace Couchbase.UnitTests.Core.Utils
         }
 
         [Theory]
-        [InlineData(555, new byte[]{ 0xab, 0x04})]
-        [InlineData(0x43, new byte[]{0x0, 0x0})]
-        [InlineData(0x5612a, new byte[]{0x0, 0x0})]
+        [InlineData(555, new byte[] {0xab, 0x04})]
+        [InlineData(0x43, new byte[] {0x43})]
+        [InlineData(0x5612a, new byte[] {0xAA, 0xC2, 0x15})]
+        [InlineData(uint.MinValue, new byte[] {0x00})]
+        [InlineData(uint.MaxValue, new byte[] {0xFF, 0xFF, 0xFF, 0xFF, 0x0F})]
         public void Test_Write(uint value, byte[] expected)
         {
-            var bytes = Leb128.Write(value, 2);
+            var bytes = Leb128.Write(value);
             Assert.Equal(expected, bytes);
+
+            var decoded = Leb128.Read(bytes);
+            Assert.Equal(value, decoded);
         }
 
         [Theory]
