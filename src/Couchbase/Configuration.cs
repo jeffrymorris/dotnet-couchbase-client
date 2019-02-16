@@ -10,6 +10,8 @@ namespace Couchbase
         private ConcurrentBag<Uri>_servers = new ConcurrentBag<Uri>();
         protected ConcurrentBag<string> _buckets = new ConcurrentBag<string>();
 
+        public static bool UseInterNetworkV6Addresses { get; set; }
+
         public IConfiguration WithServers(params string[] ips)
         {
             if (ips == null)

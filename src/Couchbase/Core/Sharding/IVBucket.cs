@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Net;
 
-namespace Couchbase.Core
+namespace Couchbase.Core.Sharding
 {
     /// <summary>
     /// Represents a VBucket partition in a Couchbase cluster
@@ -14,7 +12,7 @@ namespace Couchbase.Core
         /// </summary>
         /// <param name="index">The index of the replica.</param>
         /// <returns>An <see cref="IServer"/> if the replica is found, otherwise null.</returns>
-        IServer LocateReplica(int index);
+        IPEndPoint LocateReplica(int index);
 
         /// <summary>
         /// Gets an array of replica indexes.
