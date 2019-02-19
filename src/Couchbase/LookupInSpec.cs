@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Couchbase.Core.IO.Operations;
 using Couchbase.Core.IO.Operations.SubDocument;
 
@@ -6,45 +6,52 @@ namespace Couchbase
 {
     public class LookupInSpec
     {
-        internal readonly Dictionary<string, OperationSpec> Specs = new Dictionary<string, OperationSpec>();
-
-        private void AddSpec(OpCode opCode, string path, object value, SubdocPathFlags flags)
-        {
-            Specs.Add(path, new OperationSpec
-            {
-                Path = path,
-                Value = value,
-                OpCode = opCode,
-                PathFlags = flags
-            });
-        }
-
-        private void AddSpec(OpCode opCode, string path, object value, bool xAttr = default(bool))
-        {
-            var pathFlags = SubdocPathFlags.None;
-            if (xAttr)
-            {
-                pathFlags = SubdocPathFlags.Xattr;
-            }
-            AddSpec(opCode, path, value, pathFlags);
-        }
+        internal readonly List<OperationSpec> Specs = new List<OperationSpec>();
 
         public LookupInSpec Path(string path)
         {
-            AddSpec(OpCode.SubGet, path, false);
+            Specs.Add(LookupInSpecs.Path(path));
             return this;
         }
 
         public LookupInSpec Exists(string path)
         {
-            AddSpec(OpCode.SubExist, path, false);
+            Specs.Add(LookupInSpecs.Exists(path));
             return this;
         }
 
         public LookupInSpec XAttr(string path)
         {
-            AddSpec(OpCode.SubGet, path, true);
+            Specs.Add(LookupInSpecs.XAttr(path));
             return this;
+        }
+    }
+
+    public static class LookupInSpecs
+    {
+        private static OperationSpec AddSpec(OpCode opCode, string path, SubdocPathFlags flags = SubdocPathFlags.None)
+        {
+            return new OperationSpec
+            {
+                Path = path,
+                OpCode = opCode,
+                PathFlags = flags
+            };
+        }
+
+        public static OperationSpec Path(string path)
+        {
+            return AddSpec(OpCode.SubGet, path);
+        }
+
+        public static OperationSpec Exists(string path)
+        {
+            return AddSpec(OpCode.SubExist, path);
+        }
+
+        public static OperationSpec XAttr(string path)
+        {
+            return AddSpec(OpCode.SubGet, path, SubdocPathFlags.Xattr);
         }
     }
 }

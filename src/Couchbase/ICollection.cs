@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Couchbase.Core.IO.Operations.SubDocument;
 
 namespace Couchbase
 {
@@ -103,18 +104,12 @@ namespace Couchbase
 
         #endregion
 
-        #region Sub ReadResult
+        Task<IMutationResult> MutateIn(string id, OperationSpec[] specs, Action<MutateInOptions> options = default(Action<MutateInOptions>));
 
-        Task<IMutationResult> MutateIn(string id, MutateInSpec spec, MutateInOptions options = default(MutateInOptions));
+        Task<IMutationResult> MutateIn(string id, Action<MutateInSpec> ops, Action<MutateInOptions> options = default(Action<MutateInOptions>));
 
-        Task<IMutationResult> MutateIn(string id, Action<MutateInSpec> ops, Action<MutateInOptions> options = null);
-
-        #endregion
-        
-        Task<ILookupInResult> LookupIn(string id, LookupInSpec ops, LookupInOptions options = default(LookupInOptions));
+        Task<ILookupInResult> LookupIn(string id, OperationSpec[] specs, Action<LookupInOptions> options = default(Action<LookupInOptions>));
 
         Task<ILookupInResult> LookupIn(string id, Action<LookupInSpec> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>));
-
-        Task<ILookupInResult> LookupIn(string id, LookupInSpec[] specs, LookupInOptions options = default(LookupInOptions));
     } 
 }
