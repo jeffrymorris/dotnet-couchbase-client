@@ -40,10 +40,10 @@ namespace Couchbase.UnitTests
                 .ConfigureAwait(false);
 
             var bucket = await cluster.Bucket("default");
-            var scope = await bucket.Scope("acme");
+            var scope = await bucket.Scope("_default");
 
             Assert.NotNull(scope);
-            Assert.Equal("acme", scope.Name);
+            Assert.Equal("_default", scope.Name);
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Couchbase.UnitTests
                     .WithBucket("default"))
                 .ConfigureAwait(false);
 
-            var collection = (await (await cluster.Bucket("default")).Scope("acme"))["users"];
+            var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
             Assert.NotNull(collection);
         }
 
@@ -90,7 +90,7 @@ namespace Couchbase.UnitTests
                     .WithBucket("default"))
                 .ConfigureAwait(false);
 
-            var collection = (await (await cluster.Bucket("default")).Scope("acme"))["users"];
+            var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
             var result = await collection.Get("id");
             var content = result.ContentAs<Person>();
         }
@@ -108,8 +108,7 @@ namespace Couchbase.UnitTests
                     .WithBucket("default"))
                 .ConfigureAwait(false);
 
-            var collection = (await (await cluster.Bucket("default")).Scope("acme"))["users"];
-
+            var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
             var result =
                 await collection.Upsert("id", new Person
                 {
@@ -122,6 +121,7 @@ namespace Couchbase.UnitTests
         [Fact]
         public async Task Test_Collection_Insert()
         {
+            var key = "Test_Collection_Insert";
             var cluster = new Cluster();
             await cluster.Initialize(new Configuration
                     {
@@ -131,9 +131,10 @@ namespace Couchbase.UnitTests
                     .WithBucket("default"))
                 .ConfigureAwait(false);
 
-            var collection = (await (await cluster.Bucket("default")).Scope("acme"))["users"];
+            var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
+            await collection.Remove(key);
             var result =
-                await collection.Insert("Test_Collection_Insert", new Person
+                await collection.Insert(key, new Person
                 {
                     Age = 16, 
                     FirstName = "Valerie", 
@@ -154,7 +155,7 @@ namespace Couchbase.UnitTests
                     .WithBucket("default"))
                 .ConfigureAwait(false);
 
-            var collection = cluster.Bucket("default").Result.Scope("acme").Result["users"];
+            var collection = cluster.Bucket("default").Result.Scope("_default").Result["_default"];
 
             try
             {
@@ -183,7 +184,7 @@ namespace Couchbase.UnitTests
             Assert.Equal(21, get.ContentAs<Person>().Age);
         }
 
-        [Fact]
+      //  [Fact]
         public async Task Test_Collection_Upserts_Lots()
         {
             var cluster = new Cluster();
@@ -195,7 +196,7 @@ namespace Couchbase.UnitTests
                     .WithBucket("default"))
                 .ConfigureAwait(false);
 
-            var collection = (await (await cluster.Bucket("default")).Scope("acme"))["users"];
+            var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
 
             var items = new List<Task<IMutationResult>>();
             for (int i = 0; i < 1000000; i++)
@@ -223,7 +224,7 @@ namespace Couchbase.UnitTests
                     .WithBucket("default"))
                 .ConfigureAwait(false);
 
-            var collection = (await (await cluster.Bucket("default")).Scope("acme"))["users"];
+            var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
             var result = await collection.Get("id", timeout: new TimeSpan(0, 0, 1, 0, 1));
         }
 

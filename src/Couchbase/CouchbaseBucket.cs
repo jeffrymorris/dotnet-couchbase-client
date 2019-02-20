@@ -15,6 +15,7 @@ using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Core.IO.Operations.Legacy.Authentication;
 using Couchbase.Core.IO.Operations.Legacy.Collections;
 using Couchbase.Core.IO.Transcoders;
+using Couchbase.Core.Sharding;
 using Couchbase.Services.Views;
 using Couchbase.Utils;
 using SequenceGenerator = Couchbase.Core.IO.Operations.SequenceGenerator;
@@ -31,9 +32,10 @@ namespace Couchbase
         internal const string DefaultScope = "_default";
         private readonly ICluster _cluster;
         private readonly ConcurrentDictionary<string, IScope> _scopes = new ConcurrentDictionary<string, IScope>();
-        private BucketConfig _clusterMap;
+        private BucketConfig _bucketConfig;
         private Manifest _manifest;
         internal IConnection Connection; //just for getting started
+        private IKeyMapper _keyMapper;
 
         public CouchbaseBucket(ICluster cluster, string name)
         {
@@ -60,7 +62,6 @@ namespace Couchbase
 
         public async Task BootstrapAsync(Uri uri, IConfiguration configuration)
         {
-                       
              // 1-Create a socket connection
              //2-Authenticate connection - SASL PLAIN
              // 3-Perform Select bucket
@@ -127,7 +128,8 @@ namespace Couchbase
                     await configOp.ReadAsync(clusterMapBytes).ConfigureAwait(false);
 
                     var configResult = configOp.GetResultWithValue();
-                    _clusterMap = configResult.Content;
+                    _bucketConfig = configResult.Content;              //the cluster map
+                    _keyMapper = new VBucketKeyMapper(_bucketConfig);  //for vbucket key mapping
                 }
 
                 //#5----------- enable features with Helo, Helo...
@@ -252,6 +254,8 @@ namespace Couchbase
 
         public async Task Send(IOperation op, TaskCompletionSource<byte[]> tcs)
         {
+            var vBucket = (VBucket) _keyMapper.MapKey(op.Key);
+            op.VBucketId = (short?)vBucket.Index; //hack - make vBucketIndex a short
             await Connection.SendAsync(op.Write(), op.Completed).ConfigureAwait(false);
         }
     }

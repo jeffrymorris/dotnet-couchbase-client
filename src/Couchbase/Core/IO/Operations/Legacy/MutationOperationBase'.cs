@@ -1,4 +1,6 @@
-﻿namespace Couchbase.Core.IO.Operations.Legacy
+﻿using Couchbase.Core.Sharding;
+
+namespace Couchbase.Core.IO.Operations.Legacy
 {
     /// <summary>
     /// Represents an abstract base class for mutation operations (PROTOCOL_BINARY_CMD_SET, DELETE,REPLACE, ADD,
