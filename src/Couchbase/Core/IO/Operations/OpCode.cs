@@ -1,8 +1,9 @@
-﻿
-namespace Couchbase.Core.IO.Operations
+﻿namespace Couchbase.Core.IO.Operations
 {
     public enum OpCode : byte
     {
+        #region Basic and Extended Memcached
+
         Get = 0x00,
         Set = 0x01,
         Add = 0x02,
@@ -38,39 +39,63 @@ namespace Couchbase.Core.IO.Operations
         GAT = 0x1d,
         GATQ = 0x1e,
 
-        // SASL authentication op-codes
-        SaslList = 0x20,
-        SaslStart = 0x21,
-        SaslStep = 0x22,
-
-        //CCCP
-        GetClusterConfig = 0xb5,
-
-        //Durability constraints
-        Observe = 0x92,
-
         //couchbase only
         GetL = 0x94,
         Unlock = 0x95,
 
-        //"Dirty" reads
-        ReplicaRead = 0x83,
+        #endregion
+
+        #region SASL & Authentication
+
+        SaslList = 0x20,
+        SaslStart = 0x21,
+        SaslStep = 0x22,
 
         // used with RBAC to verify credentials with username / password
         SelectBucket = 0x89,
 
+        #endregion
+
+        #region Management & Negoiation
+
+        GetClusterConfig = 0xb5,
+
+        /// <summary>
+        ///     You say goodbye and I say Hello. Hello, hello.
+        /// </summary>
+        Helo = 0x1f,
+
         // request a server error map
         GetErrorMap = 0xfe,
+
+        #endregion
+
+        #region Replica Reads
+
+        //"Dirty" reads
+        ReplicaRead = 0x83,
+
+        #endregion
+
+        #region Durability
 
         //Enhanced durability
         ObserveSeqNo = 0x91,
 
-        /// <summary>
-        /// You say goodbye and I say Hello. Hello, hello.
-        /// </summary>
-        Helo = 0x1f,
+        //Durability constraints
+        Observe = 0x92,
 
-        /* sub readResult api shinizzle */
+        //Must be sent to allow the server to accept requests with flexible frame
+        //extras, The request magic for new requests is 0x08.
+        AltRequestSupport = 0x10,
+
+        //Must be sent to be able to specify durability requirements for mutations.
+        SyncReplication = 0x11,
+
+        #endregion
+   
+        #region  Sub-Document
+
         SubGet = 0xc5,
         SubExist = 0xc6,
         SubDictAdd = 0xc7,
@@ -86,10 +111,16 @@ namespace Couchbase.Core.IO.Operations
         SubMultiMutation = 0xd1,
         SubGetCount = 0xd2,
 
+        #endregion
+
+        #region Collections
+
         //the collections manifest
         GetCollectionsManifest = 0xBA,
 
         //Get the CID by name
         CollectionsGetId = 0xbb
+
+        #endregion
     }
 }
