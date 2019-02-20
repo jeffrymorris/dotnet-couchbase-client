@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using Newtonsoft.Json;
 
 namespace Couchbase.Core.IO.Operations.SubDocument
@@ -6,7 +6,7 @@ namespace Couchbase.Core.IO.Operations.SubDocument
     /// <summary>
     /// Represents a single operation within a mult-operation against a document using the SubDocument API.
     /// </summary>
-    internal class OperationSpec : IEqualityComparer
+    public class OperationSpec : IEqualityComparer
     {
         /// <summary>
         /// Gets or sets the N1QL path within the document.

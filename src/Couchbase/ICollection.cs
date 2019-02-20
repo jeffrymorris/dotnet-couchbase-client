@@ -1,6 +1,8 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Couchbase.Core.IO.Operations.SubDocument;
 
 namespace Couchbase
 {
@@ -103,16 +105,36 @@ namespace Couchbase
 
         #endregion
 
-        #region Sub ReadResult
+        #region LookupIn
 
-        Task<IMutationResult> MutateIn(string id, MutateInSpec spec, MutateInOptions options = default(MutateInOptions));
+        Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null);
 
-        Task<IMutationResult> MutateIn(string id, Action<MutateInSpec> ops, Action<MutateInOptions> options = null);
+        Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, Action<LookupInOptions> configureOptions);
+
+        Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, LookupInOptions options);
+
+        Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null);
+
+        Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, Action<LookupInOptions> configureOptions);
+
+        Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, LookupInOptions options);
 
         #endregion
-        
-        Task<ILookupInResult> LookupIn(string id, LookupInSpec ops, LookupInOptions options = default(LookupInOptions));
 
-        Task<ILookupInResult> LookupIn(string id, Action<LookupInSpec> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>));
+        #region MutateIn
+
+        Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false);
+
+        Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, Action<MutateInOptions> configureOptions);
+
+        Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, MutateInOptions options);
+
+        Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false);
+
+        Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, Action<MutateInOptions> configureOptions);
+
+        Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, MutateInOptions options);
+
+        #endregion
     } 
 }

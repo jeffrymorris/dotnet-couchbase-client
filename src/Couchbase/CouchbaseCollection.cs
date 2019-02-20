@@ -1,9 +1,12 @@
-﻿using Couchbase.Core.IO.Operations;
+using Couchbase.Core.IO.Operations;
 using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Utils;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Couchbase.Core.IO.Operations.Legacy.SubDocument;
+using Couchbase.Core.IO.Operations.SubDocument;
 
 namespace Couchbase
 {
@@ -66,6 +69,7 @@ namespace Couchbase
             {
                 Key = id,
                 Cid = Cid,
+                VBucketId = 752,
                 Completed = s =>
                 {
                     if (s.Status == ResponseStatus.Success)
@@ -127,6 +131,7 @@ namespace Couchbase
                 Content = content,
                 Cas = cas,
                 Cid = Cid,
+                VBucketId = 752,
                 Expires = expiration.ToTtl(),
                 Completed = s => 
                 {  
@@ -360,24 +365,217 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public Task<IMutationResult> MutateIn(string id, MutateInSpec spec, MutateInOptions options = default(MutateInOptions))
+        #region LookupIn
+
+        private static void ConfigureLookupInOptions(LookupInOptions options, TimeSpan? timeout)
         {
-            throw new NotImplementedException();
+            if (timeout.HasValue)
+            {
+                options.Timeout(timeout.Value);
+            }
         }
 
-        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpec> ops, Action<MutateInOptions> options = null)
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null)
         {
-            throw new NotImplementedException();
+            var builder = new LookupInSpecBuilder();
+            configureBuilder(builder);
+
+            var options = new LookupInOptions();
+            ConfigureLookupInOptions(options, timeout);
+
+            return LookupIn(id, builder.Specs, options);
         }
 
-        public Task<ILookupInResult> LookupIn(string id, LookupInSpec ops, LookupInOptions options = default(LookupInOptions))
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, Action<LookupInOptions> configureOptions)
         {
-            throw new NotImplementedException();
+            var builder = new LookupInSpecBuilder();
+            configureBuilder(builder);
+
+            var options = new LookupInOptions();
+            configureOptions(options);
+
+            return LookupIn(id, builder.Specs, options);
         }
 
-        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpec> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>))
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, LookupInOptions options)
         {
-            throw new NotImplementedException();
+            var lookupInSpec = new LookupInSpecBuilder();
+            configureBuilder(lookupInSpec);
+
+            return LookupIn(id, lookupInSpec.Specs, options);
         }
+
+        public Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null)
+        {
+            var options = new LookupInOptions();
+            ConfigureLookupInOptions(options, timeout);
+
+            return LookupIn(id, specs, options);
+        }
+
+        public Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, Action<LookupInOptions> configureOptions)
+        {
+            var options = new LookupInOptions();
+            configureOptions(options);
+
+            return LookupIn(id, specs, options);
+        }
+
+        public async Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, LookupInOptions options)
+        {
+            // use default timeout if not set
+            if (options._Timeout == TimeSpan.Zero)
+            {
+                options.Timeout(DefaultTimeout);
+            }
+
+            // convert new style specs into old style builder
+            var builder = new LookupInBuilder<byte[]>(null, null, id, specs);
+
+            var tcs = new TaskCompletionSource<byte[]>();
+            var lookup = new MultiLookup<byte[]>
+            {
+                Key = id,
+                Builder = builder,
+                VBucketId = 752, // hack, this needs to be set properly
+                Cid = Cid,
+                Completed = s =>
+                {
+                    if (s.Status == ResponseStatus.Success)
+                    {
+                        tcs.SetResult(s.Data.ToArray());
+                    }
+                    else
+                    {
+                        tcs.SetException(new Exception(s.Status.ToString()));
+                    }
+
+                    return tcs.Task;
+                }
+            };
+
+            await ExecuteOp(lookup, tcs, timeout: options._Timeout);
+            var bytes = await tcs.Task.ConfigureAwait(false);
+            await lookup.ReadAsync(bytes).ConfigureAwait(false);
+            return new LookupInResult(bytes, lookup.Cas, null);
+        }
+
+        #endregion
+
+        #region MutateIn
+
+        private static void ConfigureMutateInOptions(MutateInOptions options, TimeSpan? timeout, TimeSpan? expiration, ulong cas, bool createDocument)
+        {
+            if (timeout.HasValue)
+            {
+                options.Timeout(timeout.Value);
+            }
+
+            if (expiration.HasValue)
+            {
+                options.Expiration(expiration.Value);
+            }
+
+            if (cas > 0)
+            {
+                options.Cas(cas);
+            }
+
+            var flags = SubdocDocFlags.None;
+            if (createDocument)
+            {
+                flags ^= SubdocDocFlags.UpsertDocument;
+            }
+
+            options.Flags(flags);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false)
+        {
+            var builder = new MutateInSpecBuilder();
+            configureBuilder(builder);
+
+            var options = new MutateInOptions();
+
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument);
+
+            return MutateIn(id, builder.Specs, options);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, Action<MutateInOptions> configureOptions)
+        {
+            var builder = new MutateInSpecBuilder();
+            configureBuilder(builder);
+
+            var options = new MutateInOptions();
+            configureOptions(options);
+            
+            return MutateIn(id, builder.Specs, options);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, MutateInOptions options)
+        {
+            var mutateInSpec = new MutateInSpecBuilder();
+            configureBuilder(mutateInSpec);
+
+            return MutateIn(id, mutateInSpec.Specs, options);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false)
+        {
+            var options = new MutateInOptions();
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument);
+
+            return MutateIn(id, specs, options);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, Action<MutateInOptions> configureOptions)
+        {
+            var options = new MutateInOptions();
+            configureOptions(options);
+
+            return MutateIn(id, specs, options);
+        }
+
+        public async Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, MutateInOptions options)
+        {
+            // use default timeout if not set
+            if (options._Timeout == TimeSpan.Zero)
+            {
+                options.Timeout(DefaultTimeout);
+            }
+
+            // convert new style specs into old style builder
+            var builder = new MutateInBuilder<byte[]>(null, null, id, specs);
+
+            var tcs = new TaskCompletionSource<byte[]>();
+            var mutation = new MultiMutation<byte[]>
+            {
+                Key = id,
+                Builder = builder,
+                VBucketId = 752, // hack, this needs to be set properly
+                Cid = Cid,
+                Completed = s =>
+                {
+                    if (s.Status == ResponseStatus.Success)
+                    {
+                        tcs.SetResult(s.Data.ToArray());
+                    }
+                    else
+                    {
+                        tcs.SetException(new Exception(s.Status.ToString()));
+                    }
+
+                    return tcs.Task;
+                }
+            };
+
+            await ExecuteOp(mutation, tcs, timeout: options._Timeout);
+            var bytes = await tcs.Task.ConfigureAwait(false);
+            await mutation.ReadAsync(bytes).ConfigureAwait(false);
+            return new MutationResult(mutation.Cas, null, mutation.MutationToken);
+        }
+
+        #endregion
     }
 }

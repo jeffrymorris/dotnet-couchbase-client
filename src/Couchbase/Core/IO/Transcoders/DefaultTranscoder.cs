@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using Couchbase.Core.IO.Converters;
 using Couchbase.Core.IO.Operations;
@@ -37,7 +37,6 @@ namespace Couchbase.Core.IO.Transcoders
         /// Gets or sets the byte converter used by used by the <see cref="ITypeTranscoder" /> implementation.
         /// </summary>
         public IByteConverter Converter { get; set; }
-        ITypeSerializer ITypeTranscoder.Serializer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public virtual Flags GetFormat<T>(T value)
         {

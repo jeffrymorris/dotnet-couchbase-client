@@ -1,141 +1,79 @@
-﻿using System.Collections.Generic;
 using Couchbase.Core.IO.Operations;
 using Couchbase.Core.IO.Operations.SubDocument;
 
 namespace Couchbase
 {
-    public class MutateInSpec
+    public static class MutateInSpec
     {
-        internal readonly Dictionary<string, OperationSpec> Specs = new Dictionary<string, OperationSpec>();
-
-        private void AddSpec(OpCode opCode, string path, object value, SubdocPathFlags flags)
+        private static OperationSpec CreateSpec(OpCode opCode, string path, object value, bool createPath, bool isXattr)
         {
-            Specs.Add(path, new OperationSpec
+            var pathFlags = SubdocPathFlags.None;
+            if (createPath)
+            {
+                pathFlags ^= SubdocPathFlags.CreatePath;
+            }
+            if (isXattr)
+            {
+                pathFlags ^= SubdocPathFlags.Xattr;
+            }
+
+            return new OperationSpec
             {
                 Path = path,
                 Value = value,
                 OpCode = opCode,
-                PathFlags = flags
-            });
+                PathFlags = pathFlags
+            };
         }
 
-        private void AddSpec(OpCode opCode, string path, object value, bool createPath = default(bool), bool xAttr = default(bool))
+        public static OperationSpec Insert<T>(string path, T value, bool createPath = false, bool isXattr = false)
         {
-            var pathFlags = SubdocPathFlags.None;
-            if (createPath || xAttr)
-            {
-                if (createPath)
-                {
-                    pathFlags = SubdocPathFlags.CreatePath;
-                }
-                if (xAttr)
-                {
-                    pathFlags = pathFlags | SubdocPathFlags.Xattr;
-                }
-            }
-            AddSpec(opCode, path, value, pathFlags);
+            return CreateSpec(OpCode.SubGet, path, value, createPath, isXattr);
         }
 
-        public MutateInSpec Insert<T>(string path, T value, SubdocPathFlags flags)
+        public static OperationSpec Upsert<T>(string path, T value, bool createPath = false, bool isXattr = false)
         {
-            AddSpec(OpCode.SubGet, path, value, flags);
-            return this;
+            return CreateSpec(OpCode.SubDictUpsert, path, value, createPath, isXattr);
         }
 
-        public MutateInSpec Insert<T>(string path, T value, bool createPath = default(bool), bool xAttr = default(bool))
+        public static OperationSpec Replace<T>(string path, T value, bool isXattr = false)
         {
-            AddSpec(OpCode.SubGet, path, value, createPath, xAttr);
-            return this;
+            return CreateSpec(OpCode.SubReplace, path, value, false, isXattr);
         }
 
-        public MutateInSpec Upsert<T>(string path, T value, SubdocPathFlags flags)
+        public static OperationSpec Remove(string path, bool isXattr = false)
         {
-            AddSpec(OpCode.SubDictUpsert, path, value, flags);
-            return this;
+            return CreateSpec(OpCode.SubDelete, path, null, false, isXattr);
         }
 
-        public MutateInSpec Upsert<T>(string path, T value, bool createPath = default(bool), bool xAttr = default(bool))
+        public static OperationSpec ArrayAppend<T>(string path, T[] values, bool createPath = false, bool isXattr = false)
         {
-            AddSpec(OpCode.SubDictUpsert, path, value, createPath, xAttr);
-            return this;
+            return CreateSpec(OpCode.SubArrayPushLast, path, values, createPath, isXattr);
         }
 
-        public MutateInSpec Replace<T>(string path, T value, SubdocPathFlags flags)
+        public static OperationSpec ArrayPrepend<T>(string path, T[] values, bool createPath = false, bool isXattr = false)
         {
-            AddSpec(OpCode.SubReplace, path, value, flags);
-            return this;
+            return CreateSpec(OpCode.SubArrayPushFirst, path, values, createPath, isXattr);
         }
 
-        public MutateInSpec Replace<T>(string path, T value, bool xAttr = default(bool))
+        public static OperationSpec ArrayInsert<T>(string path, T[] values, bool createPath = false, bool isXattr = false)
         {
-            AddSpec(OpCode.SubReplace, path, value, false, xAttr);
-            return this;
+            return CreateSpec(OpCode.SubArrayInsert, path, values, createPath, isXattr);
         }
 
-        public MutateInSpec Remove(string path, bool xAttr = default(bool))
+        public static OperationSpec ArrayAddUnique<T>(string path, T value, bool createPath = false, bool isXattr = false)
         {
-            AddSpec(OpCode.SubDelete, path, null, false, xAttr);
-            return this;
+            return CreateSpec(OpCode.SubArrayAddUnique, path, value, createPath, isXattr);
         }
 
-        public MutateInSpec ArrayAppend<T>(string path, T[] values, SubdocPathFlags flags)
+        public static OperationSpec Increment(string path, long delta, bool createPath = false, bool isXattr = false)
         {
-            AddSpec(OpCode.SubArrayPushLast, path, values, flags);
-            return this;
+            return CreateSpec(OpCode.SubCounter, path, delta, createPath, isXattr);
         }
 
-        public MutateInSpec ArrayAppend<T>(string path, T[] values, bool createPath = default(bool), bool xAttr = default(bool))
+        public static OperationSpec Decrement(string path, long delta, bool createPath = false, bool isXattr = false)
         {
-            AddSpec(OpCode.SubArrayPushLast, path, values, createPath, xAttr);
-            return this;
-        }
-
-        public MutateInSpec ArrayPrepend<T>(string path, T[] values, SubdocPathFlags flags)
-        {
-            AddSpec(OpCode.SubArrayPushFirst, path, values, flags);
-            return this;
-        }
-
-        public MutateInSpec ArrayPrepend<T>(string path, T[] values, bool createParents = default(bool), bool xAttr = default(bool))
-        {
-            AddSpec(OpCode.SubArrayPushFirst, path, values, createParents, xAttr);
-            return this;
-        }
-
-        public MutateInSpec ArrayInsert<T>(string path, T[] values, SubdocPathFlags flags)
-        {
-            AddSpec(OpCode.SubArrayInsert, path, values, flags);
-            return this;
-        }
-
-        public MutateInSpec ArrayInsert<T>(string path, T[] values, bool createParents= default(bool), bool xAttr = default(bool))
-        {
-            AddSpec(OpCode.SubArrayInsert, path, values, createParents, xAttr);
-            return this;
-        }
-
-        public MutateInSpec ArrayAddUnique<T>(string path, T value, SubdocPathFlags flags)
-        {
-            AddSpec(OpCode.SubArrayAddUnique, path, value, flags);
-            return this;
-        }
-
-        public MutateInSpec ArrayAddUnique<T>(string path, T value, bool createPath = default(bool), bool xAttr = default(bool))
-        {
-            AddSpec(OpCode.SubArrayAddUnique, path, value, createPath, xAttr);
-            return this;
-        }
-
-        public MutateInSpec Counter(string path, long delta, SubdocPathFlags flags)
-        {
-            AddSpec(OpCode.SubArrayAddUnique, path, delta, flags);
-            return this;
-        }
-
-        public MutateInSpec Counter(string path, long delta, bool createPath = default(bool), bool xAttr = default(bool))
-        {
-            AddSpec(OpCode.SubArrayAddUnique, path, delta, createPath, xAttr);
-            return this;
+            return CreateSpec(OpCode.SubCounter, path, delta, createPath, isXattr);
         }
     }
 }
