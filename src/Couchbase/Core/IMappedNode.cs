@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Net;
 
 namespace Couchbase.Core
 {
     public interface IMappedNode
     {
-        IServer LocatePrimary();
+        IPEndPoint LocatePrimary();
 
         uint Rev { get; }
     }

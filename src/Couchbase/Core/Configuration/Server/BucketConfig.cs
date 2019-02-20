@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Couchbase.Core.Sharding;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Couchbase.Core.Configuration.Server
 {
@@ -45,28 +47,52 @@ namespace Couchbase.Core.Configuration.Server
         public string uri { get; set; }
     }
 
-    public class VBucketServerMap
+    //use Couchbase.Core.ShardingVBucketServerMap instead
+   /* public class VBucketServerMap
     {
         public string hashAlgorithm { get; set; }
         public int numReplicas { get; set; }
         public List<string> serverList { get; set; }
         public List<List<int>> vBucketMap { get; set; }
-    }
+    }*/
 
     //Root object
     public class BucketConfig
     {
-        public int rev { get; set; }
-        public string name { get; set; }
-        public string uri { get; set; }
-        public string streamingUri { get; set; }
-        public List<Node> nodes { get; set; }
-        public List<NodesExt> nodesExt { get; set; }
-        public string nodeLocator { get; set; }
-        public string uuid { get; set; }
-        public Ddocs ddocs { get; set; }
-        public VBucketServerMap vBucketServerMap { get; set; }
-        public string bucketCapabilitiesVer { get; set; }
-        public List<string> bucketCapabilities { get; set; }
+        [JsonProperty("rev")]
+        public uint Rev { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("uri")]
+        public string Uri { get; set; }
+
+        [JsonProperty("streamingUri")]
+        public string StreamingUri { get; set; }
+
+        [JsonProperty("nodes")]
+        public List<Node> Nodes { get; set; }
+
+        [JsonProperty("nodesExt")]
+        public List<NodesExt> NodesExt { get; set; }
+
+        [JsonProperty("nodeLocator")]
+        public string NodeLocator { get; set; }
+
+        [JsonProperty("uuid")]
+        public string Uuid { get; set; }
+
+        [JsonProperty("ddocs")]
+        public Ddocs Ddocs { get; set; }
+
+        [JsonProperty("vBucketServerMap")]
+        public VBucketServerMap VBucketServerMap { get; set; }
+
+        [JsonProperty("bucketCapabilitiesVer")]
+        public string BucketCapabilitiesVer { get; set; }
+
+        [JsonProperty("bucketCapabilities")]
+        public List<string> BucketCapabilities { get; set; }
     }
 }
