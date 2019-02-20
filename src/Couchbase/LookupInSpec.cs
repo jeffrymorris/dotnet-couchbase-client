@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Couchbase.Core.IO.Operations;
 using Couchbase.Core.IO.Operations.SubDocument;
 
@@ -6,52 +5,35 @@ namespace Couchbase
 {
     public class LookupInSpec
     {
-        internal readonly List<OperationSpec> Specs = new List<OperationSpec>();
-
-        public LookupInSpec Path(string path)
+        private static OperationSpec CreateSpec(OpCode opCode, string path, bool isXattr = false)
         {
-            Specs.Add(LookupInSpecs.Path(path));
-            return this;
-        }
+            var pathFlags = SubdocPathFlags.None;
+            if (isXattr)
+            {
+                pathFlags ^= SubdocPathFlags.Xattr;
+            }
 
-        public LookupInSpec Exists(string path)
-        {
-            Specs.Add(LookupInSpecs.Exists(path));
-            return this;
-        }
-
-        public LookupInSpec XAttr(string path)
-        {
-            Specs.Add(LookupInSpecs.XAttr(path));
-            return this;
-        }
-    }
-
-    public static class LookupInSpecs
-    {
-        private static OperationSpec AddSpec(OpCode opCode, string path, SubdocPathFlags flags = SubdocPathFlags.None)
-        {
             return new OperationSpec
             {
                 Path = path,
                 OpCode = opCode,
-                PathFlags = flags
+                PathFlags = pathFlags
             };
         }
 
-        public static OperationSpec Path(string path)
+        public static OperationSpec Get(string path, bool isXattr = false)
         {
-            return AddSpec(OpCode.SubGet, path);
+            return CreateSpec(OpCode.SubGet, path, isXattr);
         }
 
-        public static OperationSpec Exists(string path)
+        public static OperationSpec Exists(string path, bool isXattr = false)
         {
-            return AddSpec(OpCode.SubExist, path);
+            return CreateSpec(OpCode.SubExist, path, isXattr);
         }
 
-        public static OperationSpec XAttr(string path)
+        public static OperationSpec Count(string path, bool isXattr = false)
         {
-            return AddSpec(OpCode.SubGet, path, SubdocPathFlags.Xattr);
+            return CreateSpec(OpCode.SubGetCount, path, isXattr);
         }
     }
 }

@@ -231,8 +231,8 @@ namespace Couchbase.UnitTests
 
             var result = await collection.LookupIn("1337", ops =>
             {
-                ops.Path("path");
-                ops.XAttr("$document");
+                ops.Get("path");
+                ops.Get("$document", isXattr: true);
             });
 
         }

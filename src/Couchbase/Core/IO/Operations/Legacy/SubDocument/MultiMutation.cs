@@ -18,7 +18,6 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
             var buffer = new byte[totalLength];
 
             WriteHeader(buffer);
-            //WriteKey(buffer, OperationHeader.Length);
             Buffer.BlockCopy(keyBytes, 0, buffer, OperationHeader.Length, keyBytes.Length);
             WriteBody(buffer, OperationHeader.Length + keyBytes.Length);
             return buffer;

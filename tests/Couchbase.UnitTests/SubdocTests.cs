@@ -23,8 +23,8 @@ namespace Couchbase.UnitTests
 
             var result = await collection.LookupIn(DocumentKey, ops =>
             {
-                ops.Path("foo");
-                ops.Path("bar");
+                ops.Get("foo");
+                ops.Get("bar");
             });
 
             Assert.Equal("bar", result.ContentAs<string>(0));
@@ -39,8 +39,8 @@ namespace Couchbase.UnitTests
 
             var result = await collection.LookupIn(DocumentKey, new []
             {
-                LookupInSpecs.Path("foo"),
-                LookupInSpecs.Path("bar")
+                LookupInSpec.Get("foo"),
+                LookupInSpec.Get("bar")
             });
 
             Assert.Equal("bar", result.ContentAs<string>(0));
@@ -79,8 +79,8 @@ namespace Couchbase.UnitTests
 
             await collection.MutateIn(DocumentKey, new[]
             {
-                MutateInSpecs.Upsert("name", "mike", SubdocPathFlags.None),
-                MutateInSpecs.Replace("bar", "bar", SubdocPathFlags.None)
+                MutateInSpec.Upsert("name", "mike"),
+                MutateInSpec.Replace("bar", "bar")
             });
 
             var getResult = await collection.Get(DocumentKey);

@@ -2,7 +2,7 @@ using Couchbase.Core.IO.Operations;
 using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Utils;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Core.IO.Operations.Legacy.SubDocument;
@@ -365,180 +365,72 @@ namespace Couchbase
             throw new NotImplementedException();
         }
 
-        public async Task<IMutationResult> MutateIn(string id, OperationSpec[] specs, Action<MutateInOptions> options = default(Action<MutateInOptions>))
+        #region LookupIn
+
+        private static void ConfigureLookupInOptions(LookupInOptions options, TimeSpan? timeout)
         {
-            var mutateInOptions = new MutateInOptions();
-            options?.Invoke(mutateInOptions);
-
-            // convert new style specs into old style builder
-            var builder = new MutateInBuilder<byte[]>(null, null, id);
-            foreach (var spec in specs)
+            if (timeout.HasValue)
             {
-                switch (spec.OpCode)
-                {
-                    case OpCode.SubDictAdd:
-                        builder.Insert(spec.Path, spec.Value, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubDictUpsert:
-                        builder.Upsert(spec.Path, spec.Value, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubReplace:
-                        builder.Replace(spec.Path, spec.Value, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubDelete:
-                        builder.Remove(spec.Path, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubArrayPushLast:
-                        builder.ArrayAppend(spec.Path, spec.PathFlags, spec.DocFlags, spec.Value);
-                        break;
-                    case OpCode.SubArrayPushFirst:
-                        builder.ArrayPrepend(spec.Path, spec.PathFlags, spec.DocFlags, spec.Value);
-                        break;
-                    case OpCode.SubArrayInsert:
-                        builder.ArrayInsert(spec.Path, spec.PathFlags, spec.DocFlags, spec.Value);
-                        break;
-                    case OpCode.SubArrayAddUnique:
-                        builder.ArrayAddUnique(spec.Path, spec.Value, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubCounter:
-                        builder.Counter(spec.Path, (long) spec.Value, spec.PathFlags.HasFlag(SubdocPathFlags.CreatePath));
-                        break;
-
-                    default:
-                        // unknown opcode?
-                        break;
-                }
+                options.Timeout(timeout.Value);
             }
-
-            var tcs = new TaskCompletionSource<byte[]>();
-            var mutation = new MultiMutation<byte[]>
-            {
-                Key = id,
-                Builder = builder,
-                VBucketId = 752, // hack, this needs to be set properly
-                Cid = Cid,
-                Completed = s =>
-                {
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
-            };
-
-            await ExecuteOp(mutation, tcs);
-            var bytes = await tcs.Task.ConfigureAwait(false);
-            await mutation.ReadAsync(bytes).ConfigureAwait(false);
-            return new MutationResult(mutation.Cas, null, mutation.MutationToken);
         }
 
-        public async Task<IMutationResult> MutateIn(string id, Action<MutateInSpec> ops, Action<MutateInOptions> options = null)
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null)
         {
-            var mutateInSpec = new MutateInSpec();
-            ops(mutateInSpec);
+            var builder = new LookupInSpecBuilder();
+            configureBuilder(builder);
 
-            var mutateInOptions = new MutateInOptions();
-            options?.Invoke(mutateInOptions);
+            var options = new LookupInOptions();
+            ConfigureLookupInOptions(options, timeout);
 
-            // convert new style specs into old style builder
-            var builder = new MutateInBuilder<byte[]>(null, null, id);
-            foreach (var spec in mutateInSpec.Specs)
-            {
-                switch (spec.OpCode)
-                {
-                    case OpCode.SubDictAdd:
-                        builder.Insert(spec.Path, spec.Value, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubDictUpsert:
-                        builder.Upsert(spec.Path, spec.Value, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubReplace:
-                        builder.Replace(spec.Path, spec.Value, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubDelete:
-                        builder.Remove(spec.Path, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubArrayPushLast:
-                        builder.ArrayAppend(spec.Path, spec.PathFlags, spec.DocFlags, spec.Value);
-                        break;
-                    case OpCode.SubArrayPushFirst:
-                        builder.ArrayPrepend(spec.Path, spec.PathFlags, spec.DocFlags, spec.Value);
-                        break;
-                    case OpCode.SubArrayInsert:
-                        builder.ArrayInsert(spec.Path, spec.PathFlags, spec.DocFlags, spec.Value);
-                        break;
-                    case OpCode.SubArrayAddUnique:
-                        builder.ArrayAddUnique(spec.Path, spec.Value, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubCounter:
-                        builder.Counter(spec.Path, (long) spec.Value, spec.PathFlags.HasFlag(SubdocPathFlags.CreatePath));
-                        break;
-
-                    default:
-                        // unknown opcode?
-                        break;
-                }
-            }
-
-            var tcs = new TaskCompletionSource<byte[]>();
-            var mutation = new MultiMutation<byte[]>
-            {
-                Key = id,
-                Builder = builder,
-                VBucketId = 752, // hack, this needs to be set properly
-                Cid = Cid,
-                Completed = s =>
-                {
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
-            };
-
-            await ExecuteOp(mutation, tcs);
-            var bytes = await tcs.Task.ConfigureAwait(false);
-            await mutation.ReadAsync(bytes).ConfigureAwait(false);
-            return new MutationResult(mutation.Cas, null, mutation.MutationToken);
+            return LookupIn(id, builder.Specs, options);
         }
 
-        public async Task<ILookupInResult> LookupIn(string id, Action<LookupInSpec> ops, Action<LookupInOptions> options = default(Action<LookupInOptions>))
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, Action<LookupInOptions> configureOptions)
         {
-            var lookupInSpec = new LookupInSpec();
-            ops(lookupInSpec);
+            var builder = new LookupInSpecBuilder();
+            configureBuilder(builder);
 
-            var lookupInOptions = new LookupInOptions();
-            options?.Invoke(lookupInOptions);
+            var options = new LookupInOptions();
+            configureOptions(options);
+
+            return LookupIn(id, builder.Specs, options);
+        }
+
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, LookupInOptions options)
+        {
+            var lookupInSpec = new LookupInSpecBuilder();
+            configureBuilder(lookupInSpec);
+
+            return LookupIn(id, lookupInSpec.Specs, options);
+        }
+
+        public Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null)
+        {
+            var options = new LookupInOptions();
+            ConfigureLookupInOptions(options, timeout);
+
+            return LookupIn(id, specs, options);
+        }
+
+        public Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, Action<LookupInOptions> configureOptions)
+        {
+            var options = new LookupInOptions();
+            configureOptions(options);
+
+            return LookupIn(id, specs, options);
+        }
+
+        public async Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, LookupInOptions options)
+        {
+            // use default timeout if not set
+            if (options._Timeout == TimeSpan.Zero)
+            {
+                options.Timeout(DefaultTimeout);
+            }
 
             // convert new style specs into old style builder
-            var builder = new LookupInBuilder<byte[]>(null, null, id);
-            foreach (var spec in lookupInSpec.Specs)
-            {
-                switch (spec.OpCode)
-                {
-                    case OpCode.SubGet:
-                        builder.Get(spec.Path, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubExist:
-                        builder.Exists(spec.Path, spec.PathFlags, spec.DocFlags);
-                        break;
-                    default:
-                        // unknown opcode?
-                        break;
-                }
-            }
+            var builder = new LookupInBuilder<byte[]>(null, null, id, specs);
 
             var tcs = new TaskCompletionSource<byte[]>();
             var lookup = new MultiLookup<byte[]>
@@ -562,37 +454,102 @@ namespace Couchbase
                 }
             };
 
-            await ExecuteOp(lookup, tcs);
+            await ExecuteOp(lookup, tcs, timeout: options._Timeout);
             var bytes = await tcs.Task.ConfigureAwait(false);
             await lookup.ReadAsync(bytes).ConfigureAwait(false);
             return new LookupInResult(bytes, lookup.Cas, null);
         }
 
-        public async Task<ILookupInResult> LookupIn(string id, OperationSpec[] specs, Action<LookupInOptions> options = default(Action<LookupInOptions>))
-        {
-            var lookupInOptions = new LookupInOptions();
-            options?.Invoke(lookupInOptions);
+        #endregion
 
-            // convert new style specs into old style builder
-            var builder = new LookupInBuilder<byte[]>(null, null, id);
-            foreach (var spec in specs)
+        #region MutateIn
+
+        private static void ConfigureMutateInOptions(MutateInOptions options, TimeSpan? timeout, TimeSpan? expiration, ulong cas, bool createDocument)
+        {
+            if (timeout.HasValue)
             {
-                switch (spec.OpCode)
-                {
-                    case OpCode.SubGet:
-                        builder.Get(spec.Path, spec.PathFlags, spec.DocFlags);
-                        break;
-                    case OpCode.SubExist:
-                        builder.Exists(spec.Path, spec.PathFlags, spec.DocFlags);
-                        break;
-                    default:
-                        // unknown opcode?
-                        break;
-                }
+                options.Timeout(timeout.Value);
             }
 
+            if (expiration.HasValue)
+            {
+                options.Expiration(expiration.Value);
+            }
+
+            if (cas > 0)
+            {
+                options.Cas(cas);
+            }
+
+            var flags = SubdocDocFlags.None;
+            if (createDocument)
+            {
+                flags ^= SubdocDocFlags.UpsertDocument;
+            }
+
+            options.Flags(flags);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false)
+        {
+            var builder = new MutateInSpecBuilder();
+            configureBuilder(builder);
+
+            var options = new MutateInOptions();
+
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument);
+
+            return MutateIn(id, builder.Specs, options);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, Action<MutateInOptions> configureOptions)
+        {
+            var builder = new MutateInSpecBuilder();
+            configureBuilder(builder);
+
+            var options = new MutateInOptions();
+            configureOptions(options);
+            
+            return MutateIn(id, builder.Specs, options);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, MutateInOptions options)
+        {
+            var mutateInSpec = new MutateInSpecBuilder();
+            configureBuilder(mutateInSpec);
+
+            return MutateIn(id, mutateInSpec.Specs, options);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false)
+        {
+            var options = new MutateInOptions();
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument);
+
+            return MutateIn(id, specs, options);
+        }
+
+        public Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, Action<MutateInOptions> configureOptions)
+        {
+            var options = new MutateInOptions();
+            configureOptions(options);
+
+            return MutateIn(id, specs, options);
+        }
+
+        public async Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, MutateInOptions options)
+        {
+            // use default timeout if not set
+            if (options._Timeout == TimeSpan.Zero)
+            {
+                options.Timeout(DefaultTimeout);
+            }
+
+            // convert new style specs into old style builder
+            var builder = new MutateInBuilder<byte[]>(null, null, id, specs);
+
             var tcs = new TaskCompletionSource<byte[]>();
-            var lookup = new MultiLookup<byte[]>
+            var mutation = new MultiMutation<byte[]>
             {
                 Key = id,
                 Builder = builder,
@@ -613,10 +570,12 @@ namespace Couchbase
                 }
             };
 
-            await ExecuteOp(lookup, tcs);
+            await ExecuteOp(mutation, tcs, timeout: options._Timeout);
             var bytes = await tcs.Task.ConfigureAwait(false);
-            await lookup.ReadAsync(bytes).ConfigureAwait(false);
-            return new LookupInResult(bytes, lookup.Cas, null);
+            await mutation.ReadAsync(bytes).ConfigureAwait(false);
+            return new MutationResult(mutation.Cas, null, mutation.MutationToken);
         }
+
+        #endregion
     }
 }
