@@ -34,8 +34,9 @@ namespace Couchbase
         private readonly ConcurrentDictionary<string, IScope> _scopes = new ConcurrentDictionary<string, IScope>();
         private BucketConfig _bucketConfig;
         private Manifest _manifest;
-        internal IConnection Connection; //just for getting started
         private IKeyMapper _keyMapper;
+        private IConfiguration _configuration;
+        internal ConcurrentDictionary<IPEndPoint, IConnection> Connections = new ConcurrentDictionary<IPEndPoint, IConnection>();
 
         public CouchbaseBucket(ICluster cluster, string name)
         {
@@ -62,139 +63,40 @@ namespace Couchbase
 
         public async Task BootstrapAsync(Uri uri, IConfiguration configuration)
         {
-             // 1-Create a socket connection
-             //2-Authenticate connection - SASL PLAIN
-             // 3-Perform Select bucket
-             // 4-Fetch the cluster map
-             // 5-Enable server features using Helo
-             // 6-Fetch the ErrorMap
-             // 7-Fetch scope on demand and cache
-             // 8-Fetch collection om demand and cache
+            _configuration = configuration;
 
-            //should be abstracted
             var ipAddress = uri.GetIpAddress(false);
             var endPoint = new IPEndPoint(ipAddress, 11210);
+            var connection = GetConnection(endPoint);
 
-            //#1 ----------- create a socket
-            Connection = GetConnection(endPoint);
+            await Authenticate(connection);
+            await GetClusterMap(connection, endPoint);
+            await Negotiate(connection);   
+            await GetManifest(connection);
 
-            //#2 ----------- auth the socket
-            var sasl = new PlainSaslMechanism(configuration.UserName, configuration.Password);
-            var authenticated = await sasl.AuthenticateAsync(Connection).ConfigureAwait(false);
+            Connections.AddOrUpdate(endPoint, connection, (ep, conn) => connection);
+            await LoadConnections(configuration);
+        }
 
-            //#3 ----------- user and password are correct so perform select bucket
-            if (authenticated)
+        private async Task LoadConnections(IConfiguration configuration)
+        {
+            foreach (var server in _bucketConfig.VBucketServerMap.ServerList)
             {
-                var tcs = new TaskCompletionSource<bool>();
-                var selectBucketOp = new SelectBucket
+                var uri = new UriBuilder
                 {
-                    Converter = new DefaultConverter(),
-                    Transcoder = new DefaultTranscoder(new DefaultConverter()),
-                    Key = Name,
-                    Completed = s =>
-                    {
-                        //Status will be Success if bucket select was bueno
-                        tcs.SetResult(s.Status == ResponseStatus.Success);
-                        return tcs.Task;
-                    }
-                };
-    
-               await Connection.SendAsync(selectBucketOp.Write(), selectBucketOp.Completed)
-                    .ConfigureAwait(false);
+                    Scheme = Uri.UriSchemeHttp,
+                    Host = server.Split(":")[0]
+                }.Uri;
 
-             //#4 ----------- fetch the cluster map
-                var selected = await tcs.Task.ConfigureAwait(false);
-                if (selected)
-                {
-                    var tcs1 = new TaskCompletionSource<byte[]>();
-                    var configOp = new Config
-                    {
-                        CurrentHost = endPoint,
-                        Converter = new DefaultConverter(),
-                        Transcoder = new DefaultTranscoder(new DefaultConverter()),
-                        Opaque = SequenceGenerator.GetNext(),
-                       // Key = Name,
-                        Completed = s =>
-                        {
-                            //Status will be Success if bucket select was bueno
-                            tcs1.SetResult(s.Data.ToArray());
-                            return tcs1.Task;
-                        }
-                    };
+                var ipAddress = uri.GetIpAddress(false);
+                var endpoint = new IPEndPoint(ipAddress, 11210);
 
-                    await Connection.SendAsync(configOp.Write(), configOp.Completed).ConfigureAwait(false);
+                if (Connections.ContainsKey(endpoint)) continue;
 
-                    var clusterMapBytes = await tcs1.Task.ConfigureAwait(false);
-                    await configOp.ReadAsync(clusterMapBytes).ConfigureAwait(false);
-
-                    var configResult = configOp.GetResultWithValue();
-                    _bucketConfig = configResult.Content;              //the cluster map
-                    _keyMapper = new VBucketKeyMapper(_bucketConfig);  //for vbucket key mapping
-                }
-
-                //#5----------- enable features with Helo, Helo...
-
-                var features = new List<short>
-                {
-                    (short) ServerFeatures.SelectBucket,
-                    (short) ServerFeatures.Collections
-                };
-                var tcs2 = new TaskCompletionSource<byte[]>();
-                var heloOp = new Hello
-                {
-                    Key = Hello.BuildHelloKey(1),//temp
-                    Content = features.ToArray(),
-                    Converter = new DefaultConverter(),
-                    Transcoder = new DefaultTranscoder(new DefaultConverter()),
-                    Opaque = SequenceGenerator.GetNext(),
-                    Completed = s =>
-                    {
-                        //Status will be Success if bucket select was bueno
-                        tcs2.SetResult(s.Data.ToArray());
-                        return tcs2.Task;
-                    }
-                };
-
-                await Connection.SendAsync(heloOp.Write(), heloOp.Completed).ConfigureAwait(false);
-                var result = await tcs2.Task.ConfigureAwait(false);
-                await heloOp.ReadAsync(result).ConfigureAwait(false);
-                var supported = heloOp.GetResultWithValue();
-
-                //#6 fetch error map...
-
-                //#7 get the manifest and cache scopes/collections
-                var tcs3 = new TaskCompletionSource<byte[]>();
-                var manifestOp = new GetManifest
-                {
-                    Converter = new DefaultConverter(),
-                    Transcoder = new DefaultTranscoder(new DefaultConverter()),
-                    Opaque = SequenceGenerator.GetNext(),
-                    Completed = s =>
-                    {
-                        //Status will be Success if bucket select was bueno
-                        tcs3.SetResult(s.Data.ToArray());
-                        return tcs3.Task;
-                    }
-                };
-
-                await Connection.SendAsync(manifestOp.Write(), manifestOp.Completed).ConfigureAwait(false);
-                var manifestBytes = await tcs3.Task.ConfigureAwait(false);
-                await manifestOp.ReadAsync(manifestBytes).ConfigureAwait(false);
-
-                var manifestResult = manifestOp.GetResultWithValue();
-                _manifest = manifestResult.Content;
-
-                //warmup the scopes/collections and cache them
-                foreach (var scopeDef in _manifest.scopes)
-                {
-                    var collections = new List<ICollection>();
-                    foreach (var collectionDef in scopeDef.collections)
-                    {
-                        collections.Add(new CouchbaseCollection(this, collectionDef.uid, collectionDef.name));
-                    }
-
-                    _scopes.TryAdd(scopeDef.name, new Scope(scopeDef.name, scopeDef.uid, collections, this));
-                }
+                var connection = GetConnection(endpoint);
+                await Authenticate(connection);
+                await Negotiate(connection);
+                Connections.AddOrUpdate(endpoint, connection, (ep, conn) => connection);
             }
         }
 
@@ -212,7 +114,6 @@ namespace Couchbase
             if (socket.ConnectAsync(asyncEventArgs))
             {
                 // True means the connect command is running asynchronously, so we need to wait for completion
-
                 if (!waitHandle.WaitOne(10000))//default connect timeout
                 {
                     socket.Dispose();
@@ -230,6 +131,127 @@ namespace Couchbase
             socket.SetKeepAlives(true, 2*60*60*1000, 1000);
 
             return new MultiplexingConnection(null, socket, new DefaultConverter());
+        }
+
+        private async Task Authenticate(IConnection connection)
+        {
+            var sasl = new PlainSaslMechanism(_configuration.UserName, _configuration.Password);
+            var authenticated = await sasl.AuthenticateAsync(connection).ConfigureAwait(false);
+            if (authenticated)
+            {
+                var completionSource = new TaskCompletionSource<bool>();
+                var selectBucketOp = new SelectBucket
+                {
+                    Converter = new DefaultConverter(),
+                    Transcoder = new DefaultTranscoder(new DefaultConverter()),
+                    Key = Name,
+                    Completed = s =>
+                    {
+                        //Status will be Success if bucket select was bueno
+                        completionSource.SetResult(s.Status == ResponseStatus.Success);
+                        return completionSource.Task;
+                    }
+                };
+
+                await connection.SendAsync(selectBucketOp.Write(), selectBucketOp.Completed)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                //cache exception for later use when op is used
+            }
+        }
+
+        private async Task GetClusterMap(IConnection connection, IPEndPoint endPoint)
+        {
+            var completionSource = new TaskCompletionSource<byte[]>();
+            var configOp = new Config
+            {
+                CurrentHost = endPoint,
+                Converter = new DefaultConverter(),
+                Transcoder = new DefaultTranscoder(new DefaultConverter()),
+                Opaque = SequenceGenerator.GetNext(),
+                Completed = s =>
+                {
+                    //Status will be Success if bucket select was bueno
+                    completionSource.SetResult(s.Data.ToArray());
+                    return completionSource.Task;
+                }
+            };
+
+            await connection.SendAsync(configOp.Write(), configOp.Completed).ConfigureAwait(false);
+
+            var clusterMapBytes = await completionSource.Task.ConfigureAwait(false);
+            await configOp.ReadAsync(clusterMapBytes).ConfigureAwait(false);
+
+            var configResult = configOp.GetResultWithValue();
+            _bucketConfig = configResult.Content;              //the cluster map
+            _keyMapper = new VBucketKeyMapper(_bucketConfig);  //for vbucket key mapping
+        }
+
+        private async Task Negotiate(IConnection connection)
+        {
+            var features = new List<short>
+            {
+                (short) ServerFeatures.SelectBucket,
+                (short) ServerFeatures.Collections
+            };
+            var completionSource = new TaskCompletionSource<byte[]>();
+            var heloOp = new Hello
+            {
+                Key = Hello.BuildHelloKey(1),//temp
+                Content = features.ToArray(),
+                Converter = new DefaultConverter(),
+                Transcoder = new DefaultTranscoder(new DefaultConverter()),
+                Opaque = SequenceGenerator.GetNext(),
+                Completed = s =>
+                {
+                    //Status will be Success if bucket select was bueno
+                    completionSource.SetResult(s.Data.ToArray());
+                    return completionSource.Task;
+                }
+            };
+
+            await connection.SendAsync(heloOp.Write(), heloOp.Completed).ConfigureAwait(false);
+            var result = await completionSource.Task.ConfigureAwait(false);
+            await heloOp.ReadAsync(result).ConfigureAwait(false);
+            var supported = heloOp.GetResultWithValue();
+        }
+
+        private async Task GetManifest(IConnection connection)
+        {
+            var completionSource = new TaskCompletionSource<byte[]>();
+            var manifestOp = new GetManifest
+            {
+                Converter = new DefaultConverter(),
+                Transcoder = new DefaultTranscoder(new DefaultConverter()),
+                Opaque = SequenceGenerator.GetNext(),
+                Completed = s =>
+                {
+                    //Status will be Success if bucket select was bueno
+                    completionSource.SetResult(s.Data.ToArray());
+                    return completionSource.Task;
+                }
+            };
+
+            await connection.SendAsync(manifestOp.Write(), manifestOp.Completed).ConfigureAwait(false);
+            var manifestBytes = await completionSource.Task.ConfigureAwait(false);
+            await manifestOp.ReadAsync(manifestBytes).ConfigureAwait(false);
+
+            var manifestResult = manifestOp.GetResultWithValue();
+            _manifest = manifestResult.Content;
+
+            //warmup the scopes/collections and cache them
+            foreach (var scopeDef in _manifest.scopes)
+            {
+                var collections = new List<ICollection>();
+                foreach (var collectionDef in scopeDef.collections)
+                {
+                    collections.Add(new CouchbaseCollection(this, collectionDef.uid, collectionDef.name));
+                }
+
+                _scopes.TryAdd(scopeDef.name, new Scope(scopeDef.name, scopeDef.uid, collections, this));
+            }
         }
 
         public Task<IScope> Scope(string name)
@@ -256,7 +278,9 @@ namespace Couchbase
         {
             var vBucket = (VBucket) _keyMapper.MapKey(op.Key);
             op.VBucketId = (short?)vBucket.Index; //hack - make vBucketIndex a short
-            await Connection.SendAsync(op.Write(), op.Completed).ConfigureAwait(false);
+
+            var node =  vBucket.LocatePrimary();
+            await Connections[node].SendAsync(op.Write(), op.Completed).ConfigureAwait(false);
         }
     }
 }
