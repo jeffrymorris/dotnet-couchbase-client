@@ -15,11 +15,19 @@ namespace Couchbase.UnitTests.Core.Utils
         }
 
         [Theory]
-        [InlineData(555, new byte[] {0xab, 0x04})]
-        [InlineData(0x43, new byte[] {0x43})]
-        [InlineData(0x5612a, new byte[] {0xAA, 0xC2, 0x15})]
-        [InlineData(uint.MinValue, new byte[] {0x00})]
-        [InlineData(uint.MaxValue, new byte[] {0xFF, 0xFF, 0xFF, 0xFF, 0x0F})]
+        [InlineData(0x00, new byte []{0x00})]
+        [InlineData(0x01, new byte[] {0x01})]
+        [InlineData(0x7F, new byte[] {0x7F})]
+        [InlineData(0x80, new byte[] {0x80, 0x01})]
+        [InlineData(0x555, new byte[] {0xD5, 0x0A})]
+        [InlineData(0x7FFF, new byte[] {0xFF, 0xFF, 0x01})]
+        [InlineData(0xBFFF, new byte[] {0xFF, 0xFF, 0x02})]
+        [InlineData(0xFFFF, new byte[] {0XFF, 0xFF, 0x03})]
+        [InlineData(0x8000, new byte[] {0x80, 0x80, 0x02})]
+        [InlineData(0x5555, new byte[] {0xD5, 0xAA, 0x01})]
+        [InlineData(0xCAFEF00, new byte[] {0x80, 0xDE, 0xBF, 0x65})]
+        [InlineData(0xCAFEF00D, new byte[] {0x8D, 0xE0, 0xFB, 0xD7, 0x0C})]
+        [InlineData(0xFFFFFFFF, new byte[] {0xFF, 0xFF, 0xFF, 0xFF, 0x0F})]
         public void Test_Write(uint value, byte[] expected)
         {
             var bytes = Leb128.Write(value);
