@@ -171,6 +171,7 @@ namespace Couchbase
                 Converter = new DefaultConverter(),
                 Transcoder = new DefaultTranscoder(new DefaultConverter()),
                 Opaque = SequenceGenerator.GetNext(),
+                EndPoint = endPoint,
                 Completed = s =>
                 {
                     //Status will be Success if bucket select was bueno

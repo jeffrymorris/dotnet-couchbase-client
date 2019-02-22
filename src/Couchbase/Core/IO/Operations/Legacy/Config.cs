@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using Couchbase.Core.Configuration.Server;
 using Newtonsoft.Json;
@@ -7,7 +7,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal sealed class Config : OperationBase<BucketConfig>
     {
-        private readonly IPEndPoint _endpoint;
+        internal IPEndPoint EndPoint { get; set; }
 
         public override byte[] CreateExtras()
         {
@@ -46,9 +46,9 @@ namespace Couchbase.Core.IO.Operations.Legacy
                     var offset = Header.BodyOffset;
                     var length = TotalLength - Header.BodyOffset;
                     var json = Transcoder.Decode<string>(buffer, offset, length, Flags, OpCode);
-                    if (_endpoint != null)
+                    if (EndPoint != null)
                     {
-                        json = json.Replace("$HOST", _endpoint.Address.ToString());
+                        json = json.Replace("$HOST", EndPoint.Address.ToString());
                     }
                     bucketConfig = JsonConvert.DeserializeObject<BucketConfig>(json);
                 }
