@@ -85,7 +85,7 @@ namespace Couchbase
                 var uri = new UriBuilder
                 {
                     Scheme = Uri.UriSchemeHttp,
-                    Host = server.Split(":")[0]
+                    Host = server.Split(':')[0]
                 }.Uri;
 
                 var ipAddress = uri.GetIpAddress(false);

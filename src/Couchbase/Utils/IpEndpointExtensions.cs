@@ -62,7 +62,7 @@ namespace Couchbase.Utils
 
         public static IPEndPoint GetEndPoint(string server)
         {
-            return server.Contains('.') && !server.Contains("[") ?
+            return server.Contains(".") && !server.Contains("[") ?
                 GetIPv4EndPoint(server) :
                 GetIPv6EndPoint(server);
         }
