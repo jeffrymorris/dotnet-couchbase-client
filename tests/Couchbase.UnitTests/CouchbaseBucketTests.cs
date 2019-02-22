@@ -92,11 +92,33 @@ namespace Couchbase.UnitTests
 
             var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
 
-            await collection.Upsert("document-key", new {foo = "bar"});
+            await collection.Upsert("id", new {foo = "bar"});
             var result = await collection.Get("id");
             var content = result.ContentAs<Person>();
         }
 
+        [Fact]
+        public async Task Test_Collection_Get_With_Projections()
+        {
+            var cluster = new Cluster();
+            await cluster.Initialize(new Configuration
+                    {
+                        UserName = "Administrator",
+                        Password = "password"
+                    }.WithServers(Ips)
+                    .WithBucket("default"))
+                .ConfigureAwait(false);
+
+            var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
+
+            await collection.Upsert("id", new {foo = "bar", bar="foo"});
+            var result = await collection.Get("id", new List<string>
+            {
+                "foo",
+                "bar"
+            });
+            var content = result.ContentAs<Person>();
+        }
         
         [Fact]
         public async Task Test_Collection_Upsert()

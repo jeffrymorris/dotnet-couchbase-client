@@ -16,9 +16,7 @@ namespace Couchbase
 
         #region GET
 
-        Task<IGetResult> Get(string id,
-            TimeSpan? timeout = null,
-            CancellationToken token = default(CancellationToken));
+        Task<IGetResult> Get(string id, IEnumerable<string> projections = null, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));
 
         Task<IGetResult> Get(string id, GetOptions options);
 

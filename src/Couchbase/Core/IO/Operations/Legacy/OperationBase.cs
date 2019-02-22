@@ -14,7 +14,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal abstract class OperationBase : IOperation
     {
-        protected Flags Flags;
+        internal Flags Flags;
         public const int DefaultRetries = 2;
         protected static MutationToken DefaultMutationToken = new MutationToken(null, -1, -1, -1);
         internal ErrorCode ErrorCode;

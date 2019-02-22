@@ -12,8 +12,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Data\multi-getresponse-packet.txt" />
     <None Remove="Documents\config.json" />
     <None Remove="Documents\emmy-lou.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\multi-getresponse-packet.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Documents\emmy-lou.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
