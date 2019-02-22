@@ -52,7 +52,7 @@ namespace Couchbase
             }, useSynchronizationContext: false))
             {
                 await ((IBucketSender) _bucket).Send(op, tcs).ConfigureAwait(false);
-                var bytes = await tcs.Task.ConfigureAwait(false);
+                    var bytes = await tcs.Task.ConfigureAwait(false);
                 await op.ReadAsync(bytes).ConfigureAwait(false);
 
                 //clean up the token if we used a default token
@@ -437,7 +437,6 @@ namespace Couchbase
             {
                 Key = id,
                 Builder = builder,
-                VBucketId = 752, // hack, this needs to be set properly
                 Cid = Cid,
                 Completed = s =>
                 {
@@ -553,7 +552,6 @@ namespace Couchbase
             {
                 Key = id,
                 Builder = builder,
-                VBucketId = 752, // hack, this needs to be set properly
                 Cid = Cid,
                 Completed = s =>
                 {

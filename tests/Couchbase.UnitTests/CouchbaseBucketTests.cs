@@ -91,6 +91,8 @@ namespace Couchbase.UnitTests
                 .ConfigureAwait(false);
 
             var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
+
+            await collection.Upsert("document-key", new {foo = "bar"});
             var result = await collection.Get("id");
             var content = result.ContentAs<Person>();
         }
@@ -132,7 +134,16 @@ namespace Couchbase.UnitTests
                 .ConfigureAwait(false);
 
             var collection = (await (await cluster.Bucket("default")).Scope("_default"))["_default"];
-            await collection.Remove(key);
+
+            try
+            {
+                await collection.Remove(key);
+            }
+            catch (Exception)
+            {
+                //ignore
+            }
+
             var result =
                 await collection.Insert(key, new Person
                 {
