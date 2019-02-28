@@ -178,14 +178,14 @@ namespace Couchbase
             return new MultiplexingConnection(null, socket, new DefaultConverter());
         }
 
-        public Task<ICollection> this[string name] => GetCollection(DefaultCollection, name);
+        public Task<ICollection> this[string name] => Collection(DefaultCollection, name);
 
-        public ICollection GetCollection(string name)
+        public ICollection Collection(string name)
         {
             return null;
         }
 
-        public Task<ICollection> GetCollection(string scope, string name)
+        public Task<ICollection> Collection(string scope, string name)
         {
             if(_scopes.TryGetValue(scope, out List<ICollection> collections))
             {

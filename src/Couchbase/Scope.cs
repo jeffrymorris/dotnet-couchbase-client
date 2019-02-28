@@ -34,7 +34,7 @@ namespace Couchbase
             }
         }
 
-        public ICollection GetCollection(string name)
+        public ICollection Collection(string name)
         {
             return this[name];
         }

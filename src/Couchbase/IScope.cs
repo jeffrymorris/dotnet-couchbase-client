@@ -8,6 +8,6 @@
 
         ICollection this[string name] { get; }
 
-        ICollection GetCollection(string name);
+        ICollection Collection(string name);
     }
 }

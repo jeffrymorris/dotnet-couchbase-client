@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <None Remove="Documents\config.json" />
+    <None Remove="Documents\emmy-lou.json" />
   </ItemGroup>
 
   <ItemGroup>
