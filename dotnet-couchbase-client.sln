@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.IntegrationTests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.UnitTests", "tests\Couchbase.UnitTests\Couchbase.UnitTests.csproj", "{25F60E0C-7F9E-4A37-842E-6D30CEAE8280}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{EE44F87D-995B-4B0E-BEA8-E8AE003B4FCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Couchbase.SDK3.0.Examples", "examples\Couchbase.SDK3.0.Examples\Couchbase.SDK3.0.Examples.csproj", "{343A3FA8-FAD6-48BE-B09A-B32032DE63BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +35,10 @@ Global
 		{25F60E0C-7F9E-4A37-842E-6D30CEAE8280}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25F60E0C-7F9E-4A37-842E-6D30CEAE8280}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25F60E0C-7F9E-4A37-842E-6D30CEAE8280}.Release|Any CPU.Build.0 = Release|Any CPU
+		{343A3FA8-FAD6-48BE-B09A-B32032DE63BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{343A3FA8-FAD6-48BE-B09A-B32032DE63BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{343A3FA8-FAD6-48BE-B09A-B32032DE63BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{343A3FA8-FAD6-48BE-B09A-B32032DE63BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,6 +47,7 @@ Global
 		{8761E3A7-33FF-4663-80E3-1BD502C2F214} = {F5E7DDAA-B66C-45AC-BA6D-DB158A284259}
 		{49277D2F-BBE9-4CEA-9D19-B261B6A5837C} = {92D571D9-13A1-4526-908B-2F3A323DF72B}
 		{25F60E0C-7F9E-4A37-842E-6D30CEAE8280} = {92D571D9-13A1-4526-908B-2F3A323DF72B}
+		{343A3FA8-FAD6-48BE-B09A-B32032DE63BD} = {EE44F87D-995B-4B0E-BEA8-E8AE003B4FCB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9420B334-74E0-4C6F-9193-55072A6B9D05}
