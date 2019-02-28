@@ -1,10 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Couchbase.Core.Diagnostics;
-using Couchbase.Core.IO.HTTP;
 using Couchbase.Management;
 using Couchbase.Services.Analytics;
 using Couchbase.Services.Query;
@@ -100,7 +98,6 @@ namespace Couchbase
         public IBucketManager Buckets { get; }
         public IUserManager Users { get; }
 
-        [Obsolete("Temp")]
         public async Task Initialize(IConfiguration config)
         {
             if (string.IsNullOrWhiteSpace(config.Password) || string.IsNullOrWhiteSpace(config.UserName))
