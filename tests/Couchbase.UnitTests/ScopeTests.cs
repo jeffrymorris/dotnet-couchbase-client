@@ -17,7 +17,7 @@ namespace Couchbase.UnitTests
 
             var bucket = await cluster.Bucket("default");
             var scope = await bucket.Scope("app_west");
-            var collection = scope.GetCollection("users");
+            var collection = scope.Collection("users");
 
             Assert.NotNull(collection);
             Assert.Equal("users", collection.Name);
@@ -36,7 +36,7 @@ namespace Couchbase.UnitTests
             var bucket = await cluster.Bucket("default");
             var scope = await bucket.Scope("app_west");
            
-            Assert.Throws<CollectionNotFoundException>(()=> scope.GetCollection("xyz"));
+            Assert.Throws<CollectionNotFoundException>(()=> scope.Collection("xyz"));
         }
     }
 }

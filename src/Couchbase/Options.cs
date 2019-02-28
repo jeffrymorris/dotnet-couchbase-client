@@ -17,6 +17,8 @@ namespace Couchbase
         public ReplicateTo ReplicateTo { get; set; }
 
         public PersistTo PersistTo { get; set; }
+
+        public DurabilityLevel DurabilityLevel { get; set; }
     }
     #endregion
 
