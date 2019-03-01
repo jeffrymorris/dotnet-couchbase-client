@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Couchbase.Core.IO.Operations.Legacy
 {
@@ -9,11 +9,13 @@ namespace Couchbase.Core.IO.Operations.Legacy
         public override byte[] Write()
         {
             var key = CreateKey();
-            var header = CreateHeader(new byte[0], new byte[0], key);
+            var framingExtras = CreateFramingExtras();
+            var header = CreateHeader(new byte[0], new byte[0], key, framingExtras);
 
-            var buffer = new byte[key.GetLengthSafe() + header.GetLengthSafe()];
+            var buffer = new byte[key.GetLengthSafe() + header.GetLengthSafe() + framingExtras.GetLengthSafe()];
             Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-            Buffer.BlockCopy(key, 0, buffer, header.Length, key.Length);
+            Buffer.BlockCopy(framingExtras, 0, buffer, header.Length, framingExtras.Length);
+            Buffer.BlockCopy(key, 0, buffer, header.Length + framingExtras.Length, key.Length);
 
             return buffer;
         }

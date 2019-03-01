@@ -1,20 +1,25 @@
-﻿using System;
-
-namespace Couchbase.Core.IO.Operations.Legacy
+﻿namespace Couchbase.Core.IO.Operations.Legacy
 {
-    [Flags]
-    internal enum FramingExtraType
+    internal struct FramingExtraInfo
     {
-        ServerDuration = 0x00
+
+        public FramingExtraInfo(RequestFramingExtraType type, byte length)
+        {
+            Byte = (byte)(((byte) type << 4) | (length & 0x0F));
+        }
+
+        public byte Byte { get; }
+        public byte Type => (byte)(Byte >> 4);
+        public byte Length => (byte)(Byte & 0x0F);
     }
 }
 
-#region [ License information ]
+#region [ License information          ]
 
 /* ************************************************************
  *
  *    @author Couchbase <info@couchbase.com>
- *    @copyright 2018 Couchbase, Inc.
+ *    @copyright 2015 Couchbase, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.

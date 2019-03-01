@@ -32,7 +32,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.Authentication
             };
         }
 
-        public override byte[] CreateHeader(byte[] extras, byte[] body, byte[] key)
+        public override byte[] CreateHeader(byte[] extras, byte[] body, byte[] key, byte[] framingExtras)
         {
             var header = new byte[OperationHeader.Length];
             var totalLength = key.GetLengthSafe() + body.GetLengthSafe();
@@ -50,7 +50,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.Authentication
         {
             var body = CreateBody();
             var key = CreateKey();
-            var header = CreateHeader(null, body, key);
+            var header = CreateHeader(null, body, key, null);
 
             var buffer = new byte[header.GetLengthSafe() +
                 key.GetLengthSafe() +

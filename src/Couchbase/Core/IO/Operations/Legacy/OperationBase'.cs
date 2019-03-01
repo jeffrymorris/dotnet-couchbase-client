@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 
 namespace Couchbase.Core.IO.Operations.Legacy
@@ -117,17 +117,20 @@ namespace Couchbase.Core.IO.Operations.Legacy
             var extras = CreateExtras();
             var key = CreateKey();
             var body = CreateBody();
-            var header = CreateHeader(extras, body, key);
+            var framingExtras = CreateFramingExtras();
+            var header = CreateHeader(extras, body, key, framingExtras);
 
             var buffer = new byte[extras.GetLengthSafe() +
                                   body.GetLengthSafe() +
                                   key.GetLengthSafe() +
-                                  header.GetLengthSafe()];
+                                  header.GetLengthSafe() +
+                                  framingExtras.GetLengthSafe()];
 
             Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-            Buffer.BlockCopy(extras, 0, buffer, header.Length, extras.Length);
-            Buffer.BlockCopy(key, 0, buffer, header.Length + extras.Length, key.Length);
-            Buffer.BlockCopy(body, 0, buffer, header.Length + extras.Length + key.Length, body.Length);
+            Buffer.BlockCopy(framingExtras, 0, buffer, header.Length, framingExtras.Length);
+            Buffer.BlockCopy(extras, 0, buffer, header.Length + framingExtras.Length, extras.Length);
+            Buffer.BlockCopy(key, 0, buffer, header.Length + framingExtras.Length + extras.Length, key.Length);
+            Buffer.BlockCopy(body, 0, buffer, header.Length + framingExtras.Length + extras.Length + key.Length, body.Length);
 
             return buffer;
         }

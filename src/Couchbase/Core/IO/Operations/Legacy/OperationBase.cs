@@ -120,14 +120,24 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return tcs.Task;
         }
 
-        public virtual byte[] CreateHeader(byte[] extras, byte[] body, byte[] key)
+        public virtual byte[] CreateHeader(byte[] extras, byte[] body, byte[] key, byte[] framingExtras)
         {
             var header = new byte[OperationHeader.Length];
-            var totalLength = extras.GetLengthSafe() + key.GetLengthSafe() + body.GetLengthSafe();
+            var totalLength = extras.GetLengthSafe() + key.GetLengthSafe() + body.GetLengthSafe() + framingExtras.GetLengthSafe();
 
-            Converter.FromByte((byte)Magic.Request, header, HeaderOffsets.Magic);
+            if (framingExtras.GetLengthSafe() > 0)
+            {
+                Converter.FromByte((byte) Magic.AltRequest, header, HeaderOffsets.Magic);
+                Converter.FromByte((byte) framingExtras.GetLengthSafe(), header, HeaderOffsets.KeyLength);
+                Converter.FromByte((byte) key.GetLengthSafe(), header, HeaderOffsets.AltKeyLength);
+            }
+            else
+            {
+                Converter.FromByte((byte) Magic.Request, header, HeaderOffsets.Magic);
+                Converter.FromInt16((short) key.GetLengthSafe(), header, HeaderOffsets.KeyLength);
+            }
+
             Converter.FromByte((byte)OpCode, header, HeaderOffsets.Opcode);
-            Converter.FromInt16((short)key.GetLengthSafe(), header, HeaderOffsets.KeyLength);
             Converter.FromByte((byte)extras.GetLengthSafe(), header, HeaderOffsets.ExtrasLength);
 
             if (VBucketId.HasValue)
@@ -424,22 +434,30 @@ namespace Couchbase.Core.IO.Operations.Legacy
             return new byte[0];
         }
 
+        public virtual byte[] CreateFramingExtras()
+        {
+            return new byte[0];
+        }
+
         public virtual byte[] Write()
         {
             var extras = CreateExtras();
             var key = CreateKey();
             var body = CreateBody();
-            var header = CreateHeader(extras, body, key);
+            var framingExtras = CreateFramingExtras();
+            var header = CreateHeader(extras, body, key, framingExtras);
 
             var buffer = new byte[extras.GetLengthSafe() +
                                   body.GetLengthSafe() +
                                   key.GetLengthSafe() +
-                                  header.GetLengthSafe()];
+                                  header.GetLengthSafe() +
+                                  framingExtras.GetLengthSafe()];
 
             Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-            Buffer.BlockCopy(extras, 0, buffer, header.Length, extras.Length);
-            Buffer.BlockCopy(key, 0, buffer, header.Length + extras.Length, key.Length);
-            Buffer.BlockCopy(body, 0, buffer, header.Length + extras.Length + key.Length, body.Length);
+            Buffer.BlockCopy(framingExtras, 0, buffer, header.Length, framingExtras.Length);
+            Buffer.BlockCopy(extras, 0, buffer, header.Length + framingExtras.Length, extras.Length);
+            Buffer.BlockCopy(key, 0, buffer, header.Length + framingExtras.Length + extras.Length, key.Length);
+            Buffer.BlockCopy(body, 0, buffer, header.Length + framingExtras.Length + extras.Length + key.Length, body.Length);
 
             return buffer;
         }

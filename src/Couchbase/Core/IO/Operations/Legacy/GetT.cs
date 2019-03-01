@@ -1,4 +1,4 @@
-﻿namespace Couchbase.Core.IO.Operations.Legacy
+namespace Couchbase.Core.IO.Operations.Legacy
 {
     internal class GetT<T> : OperationBase<T>
     {
@@ -14,13 +14,15 @@
             var key = CreateKey();
             var extras = CreateExtras();
             var body = new byte[0];
-            var header = CreateHeader(extras, body, key);
+            var framingExtras = CreateFramingExtras();
+            var header = CreateHeader(extras, body, key, framingExtras);
 
-            var buffer = new byte[header.GetLengthSafe() + key.GetLengthSafe() + extras.GetLengthSafe()];
+            var buffer = new byte[header.GetLengthSafe() + key.GetLengthSafe() + extras.GetLengthSafe() + framingExtras.GetLengthSafe()];
 
             System.Buffer.BlockCopy(header, 0, buffer, 0, header.Length);
-            System.Buffer.BlockCopy(extras, 0, buffer, header.Length, extras.Length);
-            System.Buffer.BlockCopy(key, 0, buffer, header.Length + extras.Length, key.Length);
+            System.Buffer.BlockCopy(framingExtras, 0, buffer, header.Length, framingExtras.Length);
+            System.Buffer.BlockCopy(extras, 0, buffer, header.Length + framingExtras.Length, extras.Length);
+            System.Buffer.BlockCopy(key, 0, buffer, header.Length + framingExtras.Length + extras.Length, key.Length);
 
             return buffer;
         }
