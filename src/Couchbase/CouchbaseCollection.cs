@@ -146,7 +146,7 @@ namespace Couchbase
         }
 
         public Task<IMutationResult> Upsert<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = default(TimeSpan),
-            ulong cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero,
+            ulong cas = 0, PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
             var options = new UpsertOptions
@@ -188,7 +188,7 @@ namespace Couchbase
         }
 
         public Task<IMutationResult> Insert<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = default(TimeSpan),
-            ulong cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero,
+            ulong cas = 0, PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
             var options = new InsertOptions
@@ -230,7 +230,7 @@ namespace Couchbase
         }
 
         public Task<IMutationResult> Replace<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = default(TimeSpan),
-            ulong cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero,
+            ulong cas = 0, PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
             var options = new ReplaceOptions
@@ -273,7 +273,7 @@ namespace Couchbase
         }
 
         public Task Remove(string id, TimeSpan? timeout = null, ulong cas = 0,
-            PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero,
+            PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
             var options = new RemoveOptions

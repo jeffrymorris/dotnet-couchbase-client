@@ -30,8 +30,8 @@ namespace Couchbase
             TimeSpan? timeout = null,
             TimeSpan expiration = default(TimeSpan),
             ulong cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
 
@@ -47,8 +47,8 @@ namespace Couchbase
             TimeSpan? timeout = null,
             TimeSpan expiration = default(TimeSpan),
             ulong cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
 
@@ -64,8 +64,8 @@ namespace Couchbase
             TimeSpan? timeout = null,
             TimeSpan expiration = default(TimeSpan),
             ulong cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
 
@@ -80,8 +80,8 @@ namespace Couchbase
         Task Remove(string id, 
             TimeSpan? timeout = null,
             ulong cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
 

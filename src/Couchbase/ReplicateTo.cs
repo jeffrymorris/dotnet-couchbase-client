@@ -1,9 +1,8 @@
-﻿
 namespace Couchbase
 {
     public enum ReplicateTo
     {
-        Zero,
+        None,
         One,
         Two,
         Three
