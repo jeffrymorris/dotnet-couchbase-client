@@ -3,10 +3,14 @@ using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Couchbase.Core.IO.Converters;
 using Couchbase.Core.IO.Operations.Legacy.SubDocument;
 using Couchbase.Core.IO.Operations.SubDocument;
+using Couchbase.Core.IO.Serializers;
+using Couchbase.Core.IO.Transcoders;
 
 namespace Couchbase
 {
@@ -15,8 +19,9 @@ namespace Couchbase
         internal const string DefaultCollection = "_default";
         private readonly IBucket _bucket;
         private static readonly TimeSpan DefaultTimeout = new TimeSpan(0,0,0,0,2500);//temp
+        private ITypeTranscoder _transcoder = new DefaultTranscoder(new DefaultConverter());
 
-        public CouchbaseCollection(IBucket bucket, string cid, string name, IBinaryCollection binaryCollection =null)
+        public CouchbaseCollection(IBucket bucket, string cid, string name, IBinaryCollection binaryCollection = null)
         {
             Cid = Convert.ToUInt32(cid);
             Name = name;
@@ -60,16 +65,39 @@ namespace Couchbase
             }
         }
 
-        public async Task<IGetResult> Get(string id,
-            TimeSpan? timeout = null,
-            CancellationToken token = default(CancellationToken))
+        public async Task<IGetResult> Get(string id, IEnumerable<string> projections, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken))
         {
+            //A projection operation
+            var enumerable = projections as string[] ?? projections.ToArray();
+            if (enumerable.Any() && enumerable.Length < 16)
+            {
+                var specs = enumerable.Select(path => new OperationSpec
+                    {
+                        OpCode = OpCode.SubGet,
+                        Path = path
+                    }).ToList();
+
+                if (!timeout.HasValue)
+                {
+                    timeout = DefaultTimeout;
+                }
+                var lookupOp = await ExecuteLookupIn(id, specs, new LookupInOptions().Timeout(timeout.Value));
+                return new GetResult(lookupOp.Data.ToArray(), _transcoder, null)
+                {
+                    Id = lookupOp.Key,
+                    Cas = lookupOp.Cas,
+                    OpCode = lookupOp.OpCode,
+                    Flags = lookupOp.Flags,
+                    Header = lookupOp.Header
+                };
+            }
+
+            //A regular get operation
             var tcs = new TaskCompletionSource<byte[]>();
             var getOp = new Get<object>
             {
                 Key = id,
                 Cid = Cid,
-                VBucketId = 752,
                 Completed = s =>
                 {
                     if (s.Status == ResponseStatus.Success)
@@ -85,35 +113,20 @@ namespace Couchbase
                 }
             };
 
-            CancellationTokenSource cts = null;
-            if (token == CancellationToken.None)
+            await ExecuteOp(getOp, tcs, token, timeout).ConfigureAwait(false);
+            return new GetResult(getOp.Data.ToArray(), _transcoder, null)
             {
-                cts = CancellationTokenSource.CreateLinkedTokenSource(token);
-                cts.CancelAfter(timeout ?? DefaultTimeout);
-                token = cts.Token;
-            }
-            using (token.Register(() =>
-            {
-                if (tcs.Task.Status != TaskStatus.RanToCompletion)
-                {
-                    tcs.SetCanceled();
-                }
-            }, useSynchronizationContext: false))
-            {
-                await ((IBucketSender) _bucket).Send(getOp, tcs).ConfigureAwait(false);           
-                var bytes = await tcs.Task.ConfigureAwait(false);
-                await getOp.ReadAsync(bytes).ConfigureAwait(false);
-
-                //clean up the token if we used a default token
-                cts?.Dispose();
-                
-                return new GetResult(bytes, getOp.Key, getOp.Cas, null, true);
-            }
+                Id = getOp.Key,
+                Cas = getOp.Cas,
+                OpCode = getOp.OpCode,
+                Flags = getOp.Flags,
+                Header = getOp.Header
+            };
         }
 
         public Task<IGetResult> Get(string id, GetOptions options)
         {
-            return Get(id, options.Timeout);
+            return Get(id, options.ProjectList, options.Timeout);
         }
 
         public Task<IGetResult> Get(string id, Action<GetOptions> options)
@@ -131,7 +144,6 @@ namespace Couchbase
                 Content = content,
                 Cas = cas,
                 Cid = Cid,
-                VBucketId = 752,
                 Expires = expiration.ToTtl(),
                 Completed = s => 
                 {  
@@ -423,6 +435,12 @@ namespace Couchbase
 
         public async Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, LookupInOptions options)
         {
+            var lookup = await ExecuteLookupIn(id, specs, options);
+            return new LookupInResult(lookup.Data.ToArray(), lookup.Cas, null);
+        }
+
+        private async Task<MultiLookup<byte[]>> ExecuteLookupIn(string id, IEnumerable<OperationSpec> specs, LookupInOptions options)
+        {
             // use default timeout if not set
             if (options._Timeout == TimeSpan.Zero)
             {
@@ -456,7 +474,7 @@ namespace Couchbase
             await ExecuteOp(lookup, tcs, timeout: options._Timeout);
             var bytes = await tcs.Task.ConfigureAwait(false);
             await lookup.ReadAsync(bytes).ConfigureAwait(false);
-            return new LookupInResult(bytes, lookup.Cas, null);
+            return lookup;
         }
 
         #endregion

@@ -9,7 +9,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
     internal class MultiLookup<T> : OperationBase<T>, IEquatable<MultiLookup<T>>
     {
         public LookupInBuilder<T> Builder { get; set; }
-        private readonly IList<OperationSpec> _lookupCommands = new List<OperationSpec>();
+        public readonly IList<OperationSpec> LookupCommands = new List<OperationSpec>();
 
         public override byte[] Write()
         {
@@ -57,7 +57,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
                 Converter.FromString(lookup.Path, spec, 4);
 
                 buffer.AddRange(spec);
-                _lookupCommands.Add(lookup);
+                LookupCommands.Add(lookup);
             }
             return buffer.ToArray();
         }
@@ -88,7 +88,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
                 var payLoad = new byte[bodyLength];
                 System.Buffer.BlockCopy(response, valueOffset, payLoad, 0, bodyLength);
 
-                var command = _lookupCommands[commandIndex++];
+                var command = LookupCommands[commandIndex++];
                 command.Status = (ResponseStatus)Converter.ToUInt16(response, statusOffset);
                 command.ValueIsJson = payLoad.IsJson(0, bodyLength - 1);
                 command.Bytes = payLoad;
@@ -99,7 +99,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 
                 if (valueOffset >= response.Length) break;
             }
-            return (T)_lookupCommands;
+            return (T)LookupCommands;
         }
 
         public override IOperationResult<T> GetResultWithValue()

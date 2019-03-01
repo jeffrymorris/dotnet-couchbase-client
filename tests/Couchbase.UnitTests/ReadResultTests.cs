@@ -1,13 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading;
+using Couchbase.Core.Configuration.Server;
+using Couchbase.Core.IO.Converters;
 using Couchbase.Core.IO.Operations;
+using Couchbase.Core.IO.Operations.SubDocument;
+using Couchbase.Core.IO.Transcoders;
+using Couchbase.UnitTests.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Couchbase.UnitTests
 {
     public class ReadResultTests
     {
+        private ITestOutputHelper _output;
+        public ReadResultTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
         public static byte[] PocoBytes =
         {
             129, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0,
@@ -30,34 +47,38 @@ namespace Couchbase.UnitTests
         };
 
         [Fact]
-        public void Test_FullDoc_PathRead()
-        {
-            var result = new GetResult(PocoBytes, "id", 0, TimeSpan.Zero, true);
-            var content = result.ContentAs<string>("name");
-            Assert.Equal("bob", content);
-        }
-
-        [Fact]
         public void Test_FullDoc_FullRead()
         {
-            var result = new GetResult(PocoBytes, "id", 0, TimeSpan.Zero, true);
+            var result = new GetResult(PocoBytes,
+                new DefaultTranscoder(new DefaultConverter()))
+            {
+                Id = "id",
+                Cas = 0,
+                Expiration = TimeSpan.Zero,
+                OpCode =  OpCode.Get
+            };
             var content = result.ContentAs<dynamic>();
             Assert.Equal("bob", content.name.Value);
-        }
-
-        
-        [Fact]
-        public void Test_SubDoc_PathRead()
-        {
-            var result = new GetResult(LookupBytes, "id", 0, TimeSpan.Zero, false);
-            var content = result.ContentAs<string>("foo");
-            Assert.Equal("bar", content);
         }
 
         [Fact]
         public void Test_SubDoc_FullRead()
         {
-            var readResult = new GetResult(LookupBytes, "id", 0, TimeSpan.Zero, false);
+            var readResult = new GetResult(LookupBytes,
+                new DefaultTranscoder(new DefaultConverter()),
+                new List<OperationSpec>{new OperationSpec
+            {
+                Path = "bar"
+            }, new OperationSpec
+                    {
+                        Path = "poo"
+                    }})
+            {
+                Id = "id",
+                Cas = 0,
+                Expiration = TimeSpan.Zero,
+                OpCode = OpCode.SubGet
+            };
             var content = readResult.ContentAs<dynamic>();
             Assert.Equal("bar", content["foo"]);
         }
@@ -66,6 +87,56 @@ namespace Couchbase.UnitTests
         public void Test_SubDoc_ContentAs_Entire_Doc()
         {
 
+        }
+
+        void Add(JToken token, string name, JObject projection =  null)
+        {
+            foreach (var child in token.Children())
+            {
+                if (child is JValue)
+                {
+                    var value = child as JValue;
+                    value.Replace(new JObject(new JProperty(name, projection)));
+                    break;
+                }
+                _output.WriteLine(name);
+                Add(child, name, projection);
+            }
+        }
+
+        [Fact]
+        public void Test()
+        {
+            var path = "attributes".Split(".");
+            var json = "{\"type\": \"lima\",\"color\": \"green\",\"chilibean\": false}";
+            var projection = JObject.Parse(json);
+
+            var root = new JObject();
+            if (path.Length == 1)
+            {
+                root.Add(new JProperty(path.First(), projection));
+            }
+            else
+            {
+                for (var i = 0; i < path.Length; i++)
+                {
+                    if (root.Last != null)
+                    {
+                        if (i == path.Length - 1)
+                        {
+                            Add(root, path[i], projection);
+                            continue;
+                        }
+
+                        Add(root, path[i]);
+                        continue;
+                    }
+
+                    root.Add(new JProperty(path[i], null));
+                }
+            }
+
+            _output.WriteLine(root.ToString());
         }
     }
 }
