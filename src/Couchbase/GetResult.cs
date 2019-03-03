@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -125,7 +125,7 @@ namespace Couchbase
 
         JObject CreateProjection(string path, JToken content)
         {
-            var elements = path.Split(".");
+            var elements = path.Split('.');
             var projection = new JObject();
             if (elements.Length == 1)
             {

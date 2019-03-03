@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace Couchbase
@@ -21,8 +21,8 @@ namespace Couchbase
             TimeSpan timeSpan = new TimeSpan(),
             TimeSpan expiration = new TimeSpan(),
             uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero);
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None);
 
         Task<IMutationResult> Upsert<T>(string id, T content, UpsertOptions options);
 
@@ -32,8 +32,8 @@ namespace Couchbase
             TimeSpan timeSpan = new TimeSpan(),     
             TimeSpan expiration = new TimeSpan(), 
             uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero);
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None);
 
         Task<IMutationResult> Insert<T>(string id, T content, InsertOptions options);
 
@@ -43,8 +43,8 @@ namespace Couchbase
             TimeSpan timeSpan = new TimeSpan(), 
             TimeSpan expiration = new TimeSpan(), 
             uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero);
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None);
 
         Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options);
 
@@ -57,8 +57,8 @@ namespace Couchbase
         Task Remove(string id, 
             TimeSpan timeSpan = new TimeSpan(),
             uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero);
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None);
 
         Task Remove(string id, RemoveOptions options);
 

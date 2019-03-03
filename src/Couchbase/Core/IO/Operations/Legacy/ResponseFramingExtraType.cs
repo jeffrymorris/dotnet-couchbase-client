@@ -1,24 +1,26 @@
+using System;
+
 namespace Couchbase.Core.IO.Operations.Legacy
 {
-    internal class Noop : OperationBase
+    [Flags]
+    public enum ResponseFramingExtraType
     {
-        public override OpCode OpCode => OpCode.NoOp;
+        ServerDuration = 0x00
+    }
 
-        public override byte[] Write()
-        {
-            return CreateHeader(new byte[0], new byte[0], null, new byte[0]);
-        }
-
-        public override bool RequiresKey => false;
+    [Flags]
+    public enum RequestFramingExtraType
+    {
+        DurabilityRequirements = 0x01
     }
 }
 
-#region [ License information          ]
+#region [ License information ]
 
 /* ************************************************************
  *
  *    @author Couchbase <info@couchbase.com>
- *    @copyright 2017 Couchbase, Inc.
+ *    @copyright 2018 Couchbase, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.

@@ -1,4 +1,3 @@
-﻿
 namespace Couchbase.Core.IO.Operations
 {
       /// <summary>
@@ -299,7 +298,7 @@ namespace Couchbase.Core.IO.Operations
         UnknownCollection = 0x8,
 
         /// <summary>
-        /// Invalid request. Returned if an invalid durability level is specified
+        /// Invalid request. Returned if an invalid durability level is specified.
         /// </summary>
         DurabilityInvalidLevel = 0xa0,
 
@@ -307,7 +306,7 @@ namespace Couchbase.Core.IO.Operations
         /// Valid request, but given durability requirements are impossible to achieve -
         /// because insufficient configured replicas are connected. Assuming level=majority
         /// and C=number of configured nodes, durability becomes impossible if floor((C + 1) / 2)
-        /// nodes or greater are offline. 
+        /// nodes or greater are offline.
         /// </summary>
         DurabilityImpossible = 0xa1,
 
@@ -315,7 +314,7 @@ namespace Couchbase.Core.IO.Operations
         /// Returned if an attempt is made to mutate a key which already has a SyncWrite pending.
         /// Transient, the client would typically retry (possibly with backoff). Similar to ELOCKED.
         /// </summary>
-        SyncWriteInProgress =0xa2,
+        SyncWriteInProgress = 0xa2,
 
         /// <summary>
         /// The SyncWrite request has not completed in the specified time and has ambiguous result -

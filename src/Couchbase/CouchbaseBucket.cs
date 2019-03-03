@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
@@ -195,7 +195,9 @@ namespace Couchbase
             var features = new List<short>
             {
                 (short) ServerFeatures.SelectBucket,
-                (short) ServerFeatures.Collections
+                (short) ServerFeatures.Collections,
+                (short) ServerFeatures.AlternateRequestSupport,
+                (short) ServerFeatures.SynchronousReplication
             };
             var completionSource = new TaskCompletionSource<byte[]>();
             var heloOp = new Hello

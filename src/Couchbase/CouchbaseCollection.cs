@@ -17,7 +17,7 @@ namespace Couchbase
     public class CouchbaseCollection : ICollection
     {
         internal const string DefaultCollection = "_default";
-        private readonly IBucket _bucket;
+        private readonly IBucketSender _bucket;
         private static readonly TimeSpan DefaultTimeout = new TimeSpan(0,0,0,0,2500);//temp
         private ITypeTranscoder _transcoder = new DefaultTranscoder(new DefaultConverter());
 
@@ -26,7 +26,7 @@ namespace Couchbase
             Cid = Convert.ToUInt32(cid);
             Name = name;
             Binary = binaryCollection;
-            _bucket = bucket;
+            _bucket = (IBucketSender) bucket;
         }
 
         public uint Cid { get; }
@@ -35,11 +35,24 @@ namespace Couchbase
 
         public IBinaryCollection Binary { get; }
 
-        public async Task ExecuteOp(IOperation op, 
-            TaskCompletionSource<byte[]> tcs, 
-            CancellationToken token = default(CancellationToken),
-            TimeSpan? timeout = null)
+        private async Task ExecuteOp(IOperation op, CancellationToken token = default(CancellationToken), TimeSpan? timeout = null)
         {
+            // wire up op's completed function
+            var tcs = new TaskCompletionSource<byte[]>();
+            op.Completed = state =>
+            {
+                if (state.Status == ResponseStatus.Success)
+                {
+                    tcs.SetResult(state.Data.ToArray());
+                }
+                else
+                {
+                    tcs.SetException(new Exception(state.Status.ToString()));
+                }
+
+                return tcs.Task;
+            };
+
             CancellationTokenSource cts = null;
             if (token == CancellationToken.None)
             {
@@ -56,8 +69,8 @@ namespace Couchbase
                 }
             }, useSynchronizationContext: false))
             {
-                await ((IBucketSender) _bucket).Send(op, tcs).ConfigureAwait(false);
-                    var bytes = await tcs.Task.ConfigureAwait(false);
+                await _bucket.Send(op, tcs).ConfigureAwait(false);
+                var bytes = await tcs.Task.ConfigureAwait(false);
                 await op.ReadAsync(bytes).ConfigureAwait(false);
 
                 //clean up the token if we used a default token
@@ -65,23 +78,45 @@ namespace Couchbase
             }
         }
 
-        public async Task<IGetResult> Get(string id, IEnumerable<string> projections, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken))
+        public Task<IGetResult> Get(string id, IEnumerable<string> projections = null, TimeSpan? timeout = null,
+            CancellationToken token = default(CancellationToken))
+        {
+            var options = new GetOptions
+            {
+                ProjectList = projections?.ToList(),
+                Timeout = timeout,
+                Token = token
+            };
+
+            return Get(id, options);
+        }
+
+        public Task<IGetResult> Get(string id, Action<GetOptions> optionsAction)
+        {
+            var options = new GetOptions();
+            optionsAction(options);
+
+            return Get(id, options);
+        }
+
+        public async Task<IGetResult> Get(string id, GetOptions options)
         {
             //A projection operation
-            var enumerable = projections as string[] ?? projections.ToArray();
-            if (enumerable.Any() && enumerable.Length < 16)
+            var enumerable = options.ProjectList ?? options.ProjectList;
+            if (enumerable.Any() && enumerable.Count < 16)
             {
                 var specs = enumerable.Select(path => new OperationSpec
-                    {
-                        OpCode = OpCode.SubGet,
-                        Path = path
-                    }).ToList();
-
-                if (!timeout.HasValue)
                 {
-                    timeout = DefaultTimeout;
+                    OpCode = OpCode.SubGet,
+                    Path = path
+                }).ToList();
+
+                if (!options.Timeout.HasValue)
+                {
+                    options.Timeout = DefaultTimeout;
                 }
-                var lookupOp = await ExecuteLookupIn(id, specs, new LookupInOptions().Timeout(timeout.Value));
+
+                var lookupOp = await ExecuteLookupIn(id, specs, new LookupInOptions().Timeout(options.Timeout.Value));
                 return new GetResult(lookupOp.Data.ToArray(), _transcoder, null)
                 {
                     Id = lookupOp.Key,
@@ -93,27 +128,13 @@ namespace Couchbase
             }
 
             //A regular get operation
-            var tcs = new TaskCompletionSource<byte[]>();
             var getOp = new Get<object>
             {
                 Key = id,
-                Cid = Cid,
-                Completed = s =>
-                {
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());                 
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                Cid = Cid
             };
 
-            await ExecuteOp(getOp, tcs, token, timeout).ConfigureAwait(false);
+            await ExecuteOp(getOp, options.Token, options.Timeout).ConfigureAwait(false);
             return new GetResult(getOp.Data.ToArray(), _transcoder, null)
             {
                 Id = getOp.Key,
@@ -124,276 +145,262 @@ namespace Couchbase
             };
         }
 
-        public Task<IGetResult> Get(string id, GetOptions options)
+        public Task<IMutationResult> Upsert<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = default(TimeSpan),
+            ulong cas = 0, PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
-            return Get(id, options.ProjectList, options.Timeout);
+            var options = new UpsertOptions
+            {
+                Timeout = timeout,
+                Expiration = expiration,
+                Cas = cas, PersistTo = persistTo,
+                ReplicateTo = replicateTo,
+                DurabilityLevel = durabilityLevel,
+                Token = token
+            };
+
+            return Upsert(id, content, options);
         }
 
-        public Task<IGetResult> Get(string id, Action<GetOptions> options)
+        public Task<IMutationResult> Upsert<T>(string id, T content, Action<UpsertOptions> optionsAction)
         {
-            throw new NotImplementedException();
+            var options = new UpsertOptions();
+            optionsAction(options);
+
+            return Upsert(id, content, options);
         }
 
-        public async Task<IMutationResult> Upsert<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = new TimeSpan(),
-            uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero, CancellationToken token = default(CancellationToken))
+        public async Task<IMutationResult> Upsert<T>(string id, T content, UpsertOptions options)
         {
-            var tcs = new TaskCompletionSource<byte[]>();
             var upsertOp = new Set<T>
             {
                 Key = id,
                 Content = content,
-                Cas = cas,
+                Cas = options.Cas,
                 Cid = Cid,
-                Expires = expiration.ToTtl(),
-                Completed = s => 
-                {  
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                Expires = options.Expiration.ToTtl(),
+                DurabilityLevel = options.DurabilityLevel,
+                DurabilityTimeout = TimeSpan.FromMilliseconds(1500)
             };
 
-            await ExecuteOp(upsertOp, tcs, token, timeout).ConfigureAwait(false);
+            await ExecuteOp(upsertOp, options.Token, options.Timeout).ConfigureAwait(false);
             return new MutationResult(upsertOp.Cas, null, upsertOp.MutationToken);
         }
 
-        public Task<IMutationResult> Upsert<T>(string id, T content, UpsertOptions options)
+        public Task<IMutationResult> Insert<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = default(TimeSpan),
+            ulong cas = 0, PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            var options = new InsertOptions
+            {
+                Timeout = timeout,
+                Expiration = expiration,
+                Cas = cas, PersistTo = persistTo,
+                ReplicateTo = replicateTo,
+                DurabilityLevel = durabilityLevel,
+                Token = token
+            };
+
+            return Insert(id, content, options);
         }
 
-        public Task<IMutationResult> Upsert<T>(string id, T content, Action<UpsertOptions> options)
+        public Task<IMutationResult> Insert<T>(string id, T content, Action<InsertOptions> optionsAction)
         {
-            throw new NotImplementedException();
+            var options = new InsertOptions();
+            optionsAction(options);
+
+            return Insert(id, content, options);
         }
 
-        public async Task<IMutationResult> Insert<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = new TimeSpan(),
-            uint cas = 0, PersistTo persistTo = PersistTo.Zero, ReplicateTo replicateTo = ReplicateTo.Zero, CancellationToken token = default(CancellationToken))
+        public async Task<IMutationResult> Insert<T>(string id, T content, InsertOptions options)
         {
-            var tcs = new TaskCompletionSource<byte[]>();
             var insertOp = new Add<T>
             {
                 Key = id,
                 Content = content,
-                Cas = cas,
+                Cas = options.Cas,
                 Cid = Cid,
-                Expires = expiration.ToTtl(),
-                Completed = s => 
-                {  
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                Expires = options.Expiration.ToTtl(),
+                DurabilityLevel = options.DurabilityLevel,
+                DurabilityTimeout = TimeSpan.FromMilliseconds(1500)
             };
   
-            await ExecuteOp(insertOp, tcs, token, timeout).ConfigureAwait(false);
+            await ExecuteOp(insertOp, options.Token, options.Timeout).ConfigureAwait(false);
             return new MutationResult(insertOp.Cas, null, insertOp.MutationToken);
         }
 
-        public Task<IMutationResult> Insert<T>(string id, T content, InsertOptions options)
+        public Task<IMutationResult> Replace<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = default(TimeSpan),
+            ulong cas = 0, PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            var options = new ReplaceOptions
+            {
+                Timeout = timeout,
+                Expiration = expiration,
+                Cas = cas,
+                PersistTo = persistTo,
+                ReplicateTo = replicateTo,
+                DurabilityLevel = durabilityLevel,
+                Token = token
+            };
+
+            return Replace(id, content, options);
         }
 
-        public Task<IMutationResult> Insert<T>(string id, T content, Action<InsertOptions> options)
+        public Task<IMutationResult> Replace<T>(string id, T content, Action<ReplaceOptions> optionsAction)
         {
-            throw new NotImplementedException();
+            var options = new ReplaceOptions();
+            optionsAction(options);
+
+            return Replace(id, content, options);
         }
 
-        public async Task<IMutationResult> Replace<T>(string id,
-            T content,
-            TimeSpan? timeout = null,
-            TimeSpan expiration = new TimeSpan(),
-            uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero, 
-            CancellationToken token = default(CancellationToken))
+        public async Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options)
         {
-            var tcs = new TaskCompletionSource<byte[]>();
             var replaceOp = new Replace<T>
             {
                 Key = id,
                 Content = content,
-                Cas = cas,
+                Cas = options.Cas,
                 Cid = Cid,
-                Expires = expiration.ToTtl(),
-                Completed = s => 
-                {  
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                Expires = options.Expiration.ToTtl(),
+                DurabilityLevel = options.DurabilityLevel,
+                DurabilityTimeout = TimeSpan.FromMilliseconds(1500)
             };
 
-            await ExecuteOp(replaceOp, tcs, token, timeout).ConfigureAwait(false);
+            await ExecuteOp(replaceOp, options.Token, options.Timeout).ConfigureAwait(false);
             return new MutationResult(replaceOp.Cas, null, replaceOp.MutationToken);
         }
 
-        public Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options)
+        public Task Remove(string id, TimeSpan? timeout = null, ulong cas = 0,
+            PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            var options = new RemoveOptions
+            {
+                Timeout = timeout,
+                Cas = cas,
+                PersistTo = persistTo,
+                ReplicateTo = replicateTo,
+                DurabilityLevel = durabilityLevel,
+                Token = token
+            };
+
+            return Remove(id, options);
         }
 
-        public Task<IMutationResult> Replace<T>(string id, T content, Action<ReplaceOptions> options)
+        public Task Remove(string id, Action<RemoveOptions> optionsAction)
         {
-            throw new NotImplementedException();
+            var options = new RemoveOptions();
+            optionsAction(options);
+
+            return Remove(id, options);
         }
 
-        public async Task Remove(string id,
-            TimeSpan? timeout = null,
-            uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
-            CancellationToken token = default(CancellationToken))
+        public async Task Remove(string id, RemoveOptions options)
         {
-            var tcs = new TaskCompletionSource<byte[]>();
             var removeOp = new Delete
             {
                 Key = id,
-                Cas = cas,
+                Cas = options.Cas,
                 Cid = Cid,
-                Completed = s => 
-                {  
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                DurabilityLevel = options.DurabilityLevel,
+                DurabilityTimeout = TimeSpan.FromMilliseconds(1500)
             };
 
-            await ExecuteOp(removeOp, tcs, token, timeout).ConfigureAwait(false);
+            await ExecuteOp(removeOp, options.Token, options.Timeout).ConfigureAwait(false);
         }
 
-        public Task Remove(string id, RemoveOptions options)
+        public Task Unlock<T>(string id, TimeSpan? timeout = null, ulong cas = 0, CancellationToken token = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            var options = new UnlockOptions
+            {
+                Timeout = timeout,
+                Cas = cas,
+                Token = token
+            };
+
+            return Unlock<T>(id, options);
         }
 
-        public Task Remove(string id, Action<RemoveOptions> options)
+        public Task Unlock<T>(string id, Action<UnlockOptions> optionsAction)
         {
-            throw new NotImplementedException();
+            var options = new UnlockOptions();
+            optionsAction(options);
+
+            return Unlock<T>(id, options);
         }
 
-        public async Task Unlock<T>(string id,
-            TimeSpan? timeout = null,
-            CancellationToken token = default(CancellationToken))
+        public async Task Unlock<T>(string id, UnlockOptions options)
         {
-            var tcs = new TaskCompletionSource<byte[]>();
             var unlockOp = new Unlock
             {
                 Key = id,
                 Cid = Cid,
-                Completed = s => 
-                {  
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                Cas = options.Cas
             };
 
-            await ExecuteOp(unlockOp, tcs, token, timeout).ConfigureAwait(false);
+            await ExecuteOp(unlockOp, options.Token, options.Timeout).ConfigureAwait(false);
         }
 
-        public Task Unlock<T>(string id, UnlockOptions options)
+        public Task Touch(string id, TimeSpan expiration, TimeSpan? timeout = null,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            var options = new TouchOptions
+            {
+                Timeout = timeout,
+                DurabilityLevel = durabilityLevel,
+                Token = token
+            };
+
+            return Touch(id, expiration, options);
         }
 
-        public Task Unlock<T>(string id, Action<UnlockOptions> options)
+        public Task Touch(string id, TimeSpan expiration, Action<TouchOptions> optionsAction)
         {
-            throw new NotImplementedException();
+            var options = new TouchOptions();
+            optionsAction(options);
+
+            return Touch(id, expiration, options);
         }
 
-        public async Task Touch(string id,
-            TimeSpan expiration,
-            TimeSpan? timeout = null,
-            CancellationToken token = default(CancellationToken))
+        public async Task Touch(string id, TimeSpan expiration, TouchOptions options)
         {
-            var tcs = new TaskCompletionSource<byte[]>();
             var touchOp = new Touch
             {
                 Key = id,
                 Cid = Cid,
                 Expires = expiration.ToTtl(),
-                Completed = s => 
-                {  
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                DurabilityLevel = options.DurabilityLevel,
+                DurabilityTimeout = TimeSpan.FromMilliseconds(1500)
             };
 
-            await ExecuteOp(touchOp, tcs, token, timeout).ConfigureAwait(false);
-        }
-
-        public Task Touch(string id, GetAndTouchOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Touch(string id, Action<GetAndTouchOptions> options)
-        {
-            throw new NotImplementedException();
+            await ExecuteOp(touchOp, options.Token, options.Timeout).ConfigureAwait(false);
         }
 
         #region LookupIn
 
-        private static void ConfigureLookupInOptions(LookupInOptions options, TimeSpan? timeout)
+        private static void ConfigureLookupInOptions(LookupInOptions options, TimeSpan? timeout, CancellationToken token)
         {
             if (timeout.HasValue)
             {
                 options.Timeout(timeout.Value);
             }
+
+            if (token != CancellationToken.None)
+            {
+                options._Token = token;
+            }
         }
 
-        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null)
+        public Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null,
+            CancellationToken token = default(CancellationToken))
         {
             var builder = new LookupInSpecBuilder();
             configureBuilder(builder);
 
             var options = new LookupInOptions();
-            ConfigureLookupInOptions(options, timeout);
+            ConfigureLookupInOptions(options, timeout, token);
 
             return LookupIn(id, builder.Specs, options);
         }
@@ -417,10 +424,11 @@ namespace Couchbase
             return LookupIn(id, lookupInSpec.Specs, options);
         }
 
-        public Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null)
+        public Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null,
+            CancellationToken token = default(CancellationToken))
         {
             var options = new LookupInOptions();
-            ConfigureLookupInOptions(options, timeout);
+            ConfigureLookupInOptions(options, timeout, token);
 
             return LookupIn(id, specs, options);
         }
@@ -441,39 +449,17 @@ namespace Couchbase
 
         private async Task<MultiLookup<byte[]>> ExecuteLookupIn(string id, IEnumerable<OperationSpec> specs, LookupInOptions options)
         {
-            // use default timeout if not set
-            if (options._Timeout == TimeSpan.Zero)
-            {
-                options.Timeout(DefaultTimeout);
-            }
-
             // convert new style specs into old style builder
             var builder = new LookupInBuilder<byte[]>(null, null, id, specs);
 
-            var tcs = new TaskCompletionSource<byte[]>();
             var lookup = new MultiLookup<byte[]>
             {
                 Key = id,
                 Builder = builder,
-                Cid = Cid,
-                Completed = s =>
-                {
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                Cid = Cid
             };
 
-            await ExecuteOp(lookup, tcs, timeout: options._Timeout);
-            var bytes = await tcs.Task.ConfigureAwait(false);
-            await lookup.ReadAsync(bytes).ConfigureAwait(false);
+            await ExecuteOp(lookup, options._Token, options._Timeout);
             return lookup;
         }
 
@@ -481,7 +467,8 @@ namespace Couchbase
 
         #region MutateIn
 
-        private static void ConfigureMutateInOptions(MutateInOptions options, TimeSpan? timeout, TimeSpan? expiration, ulong cas, bool createDocument)
+        private static void ConfigureMutateInOptions(MutateInOptions options, TimeSpan? timeout, TimeSpan? expiration,
+            ulong cas, bool createDocument, CancellationToken token)
         {
             if (timeout.HasValue)
             {
@@ -504,17 +491,23 @@ namespace Couchbase
                 flags ^= SubdocDocFlags.UpsertDocument;
             }
 
+            if (token != CancellationToken.None)
+            {
+                options._Token = token;
+            }
+
             options.Flags(flags);
         }
 
-        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false)
+        public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false,
+            CancellationToken token = default(CancellationToken))
         {
             var builder = new MutateInSpecBuilder();
             configureBuilder(builder);
 
             var options = new MutateInOptions();
 
-            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument);
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, token);
 
             return MutateIn(id, builder.Specs, options);
         }
@@ -538,10 +531,11 @@ namespace Couchbase
             return MutateIn(id, mutateInSpec.Specs, options);
         }
 
-        public Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false)
+        public Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false,
+            CancellationToken token = default(CancellationToken))
         {
             var options = new MutateInOptions();
-            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument);
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, token);
 
             return MutateIn(id, specs, options);
         }
@@ -556,39 +550,17 @@ namespace Couchbase
 
         public async Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, MutateInOptions options)
         {
-            // use default timeout if not set
-            if (options._Timeout == TimeSpan.Zero)
-            {
-                options.Timeout(DefaultTimeout);
-            }
-
             // convert new style specs into old style builder
             var builder = new MutateInBuilder<byte[]>(null, null, id, specs);
 
-            var tcs = new TaskCompletionSource<byte[]>();
             var mutation = new MultiMutation<byte[]>
             {
                 Key = id,
                 Builder = builder,
-                Cid = Cid,
-                Completed = s =>
-                {
-                    if (s.Status == ResponseStatus.Success)
-                    {
-                        tcs.SetResult(s.Data.ToArray());
-                    }
-                    else
-                    {
-                        tcs.SetException(new Exception(s.Status.ToString()));
-                    }
-
-                    return tcs.Task;
-                }
+                Cid = Cid
             };
 
-            await ExecuteOp(mutation, tcs, timeout: options._Timeout);
-            var bytes = await tcs.Task.ConfigureAwait(false);
-            await mutation.ReadAsync(bytes).ConfigureAwait(false);
+            await ExecuteOp(mutation, options._Token, options._Timeout);
             return new MutationResult(mutation.Cas, null, mutation.MutationToken);
         }
 

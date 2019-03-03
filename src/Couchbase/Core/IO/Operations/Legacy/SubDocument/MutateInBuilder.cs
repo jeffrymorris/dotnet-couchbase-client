@@ -37,8 +37,8 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
 
             Cas = 0L;
             Expiry = new TimeSpan();
-            PersistTo = PersistTo.Zero;
-            ReplicateTo = ReplicateTo.Zero;
+            PersistTo = PersistTo.None;
+            ReplicateTo = ReplicateTo.None;
         }
 
         /// <summary>

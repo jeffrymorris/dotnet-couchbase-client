@@ -14,53 +14,64 @@ namespace Couchbase
 
         IBinaryCollection Binary { get; }
 
-        #region GET
+        #region Get
 
         Task<IGetResult> Get(string id, IEnumerable<string> projections = null, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));
 
-        Task<IGetResult> Get(string id, GetOptions options);
+        Task<IGetResult> Get(string id, Action<GetOptions> optionsAction);
 
-        Task<IGetResult> Get(string id, Action<GetOptions> options);
+        Task<IGetResult> Get(string id, GetOptions options);
 
         #endregion
 
-        #region SET
+        #region Upsert
 
         Task<IMutationResult> Upsert<T>(string id, T content,
             TimeSpan? timeout = null,
-            TimeSpan expiration = new TimeSpan(),
-            uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
+            TimeSpan expiration = default(TimeSpan),
+            ulong cas = 0,
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
+
+        Task<IMutationResult> Upsert<T>(string id, T content, Action<UpsertOptions> optionsAction);
 
         Task<IMutationResult> Upsert<T>(string id, T content, UpsertOptions options);
 
-        Task<IMutationResult> Upsert<T>(string id, T content, Action<UpsertOptions> options);
+        #endregion
+
+        #region Insert
 
         Task<IMutationResult> Insert<T>(string id, T content,
             TimeSpan? timeout = null,
-            TimeSpan expiration = new TimeSpan(), 
-            uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
+            TimeSpan expiration = default(TimeSpan),
+            ulong cas = 0,
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
+
+        Task<IMutationResult> Insert<T>(string id, T content, Action<InsertOptions> optionsAction);
 
         Task<IMutationResult> Insert<T>(string id, T content, InsertOptions options);
 
-        Task<IMutationResult> Insert<T>(string id, T content, Action<InsertOptions> options);
+        #endregion
+
+        #region Replace
 
         Task<IMutationResult> Replace<T>(string id, T content, 
             TimeSpan? timeout = null,
-            TimeSpan expiration = new TimeSpan(), 
-            uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
+            TimeSpan expiration = default(TimeSpan),
+            ulong cas = 0,
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
 
-        Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options);
+        Task<IMutationResult> Replace<T>(string id, T content, Action<ReplaceOptions> optionsAction);
 
-        Task<IMutationResult> Replace<T>(string id, T content, Action<ReplaceOptions> options);
+        Task<IMutationResult> Replace<T>(string id, T content, ReplaceOptions options);
 
         #endregion
 
@@ -68,14 +79,15 @@ namespace Couchbase
 
         Task Remove(string id, 
             TimeSpan? timeout = null,
-            uint cas = 0,
-            PersistTo persistTo = PersistTo.Zero,
-            ReplicateTo replicateTo = ReplicateTo.Zero,
+            ulong cas = 0,
+            PersistTo persistTo = PersistTo.None,
+            ReplicateTo replicateTo = ReplicateTo.None,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
 
-        Task Remove(string id, RemoveOptions options);
+        Task Remove(string id, Action<RemoveOptions> optionsAction);
 
-        Task Remove(string id, Action<RemoveOptions> options);
+        Task Remove(string id, RemoveOptions options);
 
         #endregion
 
@@ -83,11 +95,12 @@ namespace Couchbase
 
         Task Unlock<T>(string id,
             TimeSpan? timeout = null,
+            ulong cas = 0,
             CancellationToken token = default(CancellationToken));
 
-        Task Unlock<T>(string id, UnlockOptions options);
+        Task Unlock<T>(string id, Action<UnlockOptions> optionsAction);
 
-        Task Unlock<T>(string id, Action<UnlockOptions> options);
+        Task Unlock<T>(string id, UnlockOptions options);
 
         #endregion
 
@@ -95,23 +108,24 @@ namespace Couchbase
 
         Task Touch(string id, TimeSpan expiration,
             TimeSpan? timeout = null,
+            DurabilityLevel durabilityLevel = DurabilityLevel.None,
             CancellationToken token = default(CancellationToken));
 
-        Task Touch(string id, GetAndTouchOptions options);
+        Task Touch(string id, TimeSpan expiration, Action<TouchOptions> optionsAction);
 
-        Task Touch(string id, Action<GetAndTouchOptions> options);
+        Task Touch(string id, TimeSpan expiration, TouchOptions options);
 
         #endregion
 
         #region LookupIn
 
-        Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null);
+        Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));
 
         Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, Action<LookupInOptions> configureOptions);
 
         Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, LookupInOptions options);
 
-        Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null);
+        Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));
 
         Task<ILookupInResult> LookupIn(string id, IEnumerable<OperationSpec> specs, Action<LookupInOptions> configureOptions);
 
@@ -121,13 +135,13 @@ namespace Couchbase
 
         #region MutateIn
 
-        Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false);
+        Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false, CancellationToken token = default(CancellationToken));
 
         Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, Action<MutateInOptions> configureOptions);
 
         Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, MutateInOptions options);
 
-        Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false);
+        Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false, CancellationToken token = default(CancellationToken));
 
         Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, Action<MutateInOptions> configureOptions);
 

@@ -32,7 +32,7 @@ namespace Couchbase.Core.IO.Operations.Legacy.Authentication
 
         public override OpCode OpCode => OpCode.SaslList;
 
-        public override byte[] CreateHeader(byte[] extras, byte[] body, byte[] key)
+        public override byte[] CreateHeader(byte[] extras, byte[] body, byte[] key, byte[] framingExtras)
         {
             var header = new byte[OperationHeader.Length];
 

@@ -1,4 +1,4 @@
-﻿namespace Couchbase.Core.IO.Operations.Legacy
+namespace Couchbase.Core.IO.Operations.Legacy
 {
     /// <summary>
     /// Features that they client negotiate on a per connection basis.
@@ -43,12 +43,26 @@
         SelectBucket = 0x08,
 
         /// <summary>
-        /// Retrieve the Server Duration of the operation. This enables the server to return respondes
+        /// Retrieve the Server Duration of the operation. This enables the server to return responds
         /// with magic <see cref="Magic.AltResponse"/>.
         /// </summary>
         ServerDuration = 0x0f,
 
-        Collections = 0x11
+        /// <summary>
+        /// Indicates if the client can send requests that include Framing Extras encoded into the request packet.
+        /// </summary>
+        AlternateRequestSupport = 0x10,
+
+        /// <summary>
+        /// Indicates if requests can include synchronous replication requirements into framing extras.
+        /// NOTE: Requires <see cref="AlternateRequestSupport"/> be enabled too.
+        /// </summary>
+        SynchronousReplication = 0x11,
+
+        /// <summary>
+        /// Indicates if the server supports scoped collections.
+        /// </summary>
+        Collections = 0x12
     }
 }
 

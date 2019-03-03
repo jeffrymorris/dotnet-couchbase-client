@@ -1,9 +1,8 @@
-﻿
 namespace Couchbase
 {
     public enum PersistTo
     {
-        Zero,
+        None,
         One,
         Two,
         Three,

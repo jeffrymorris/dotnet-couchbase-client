@@ -1,71 +1,161 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Couchbase
 {
-    #region Insert Options
+    #region GetOptions
 
-    public class InsertOptions
+    public struct GetOptions
     {
-        public TimeSpan Timeout { get; set; }
+        public bool IncludeExpiration { get; set; }
+
+        public bool CreatePath { get; set; }
+
+        public TimeSpan? Timeout { get; set; }
+
+        public CancellationToken Token { get; set; }
+
+        public PersistTo PersistTo { get; set; }
+
+        public DurabilityLevel DurabilityLevel { get; set; }
+
+        public List<string> ProjectList { get; set; }
+
+        public GetOptions WithTimeout(TimeSpan timeout)
+        {
+            Timeout = timeout;
+            return this;
+        }
+
+        public GetOptions Project(params string[] fields)
+        {
+            if(ProjectList == null) ProjectList = new List<string>();
+            ProjectList.AddRange(fields);
+            return this;
+        }
+
+        public GetOptions WithCreatePath(bool createPath)
+        {
+            CreatePath = createPath;
+            return this;
+        }
+
+        public GetOptions WithExpiration()
+        {
+            IncludeExpiration = true;
+            return this;
+        }
+    }
+
+    #endregion
+
+    #region Upsert Options
+
+    public struct UpsertOptions
+    {
+        public TimeSpan? Timeout { get; set; }
 
         public TimeSpan Expiration { get; set; }
 
-        public long Cas { get; set; }
+        public ulong Cas { get; set; }
 
         public ReplicateTo ReplicateTo { get; set; }
 
         public PersistTo PersistTo { get; set; }
 
         public DurabilityLevel DurabilityLevel { get; set; }
+
+        public CancellationToken Token { get; set; }
     }
+
     #endregion
 
-    #region Upsert Options
-    public class UpsertOptions
+    #region Insert Options
+
+    public struct InsertOptions
     {
-        public TimeSpan Timeout { get; set; }
+        public TimeSpan? Timeout { get; set; }
 
         public TimeSpan Expiration { get; set; }
 
-        public long Cas { get; set; }
-
-        public ReplicateTo ReplicateTo { get; set; }
-
-        public PersistTo PersistTo { get; set; }
-    }
-    #endregion
-
-    #region Remove Options
-    public class RemoveOptions
-    {
-        public TimeSpan Timeout { get; set; }
-
-        public long Cas { get; set; }
+        public ulong Cas { get; set; }
 
         public ReplicateTo ReplicateTo { get; set; }
 
         public PersistTo PersistTo { get; set; }
 
-        public DurabilityLevel  DurabilityLevel{ get; set; }
+        public DurabilityLevel DurabilityLevel { get; set; }
+
+        public CancellationToken Token { get;set; }
     }
 
     #endregion
 
     #region Replace Options
-    public class ReplaceOptions
+
+    public struct ReplaceOptions
     {
-        public TimeSpan Timeout { get; set; }
+        public TimeSpan? Timeout { get; set; }
 
         public TimeSpan Expiration { get; set; }
 
-        public long Cas { get; set; }
+        public ulong Cas { get; set; }
 
         public ReplicateTo ReplicateTo { get; set; }
 
         public PersistTo PersistTo { get; set; }
+
+        public DurabilityLevel DurabilityLevel { get; set; }
+
+        public CancellationToken Token { get; set; }
     }
+
+    #endregion
+
+    #region Remove Options
+
+    public struct RemoveOptions
+    {
+        public TimeSpan? Timeout { get; set; }
+
+        public ulong Cas { get; set; }
+
+        public ReplicateTo ReplicateTo { get; set; }
+
+        public PersistTo PersistTo { get; set; }
+
+        public DurabilityLevel DurabilityLevel { get; set; }
+
+        public CancellationToken Token { get; set; }
+    }
+
+    #endregion
+
+    #region Unlock Options
+
+    public struct UnlockOptions
+    {
+        public TimeSpan? Timeout { get; set; }
+
+        public ulong Cas { get; set; }
+
+        public CancellationToken Token { get; set; }
+    }
+
+    #endregion
+
+    #region Touch Options
+
+    public struct TouchOptions
+    {
+        public TimeSpan? Timeout { get; set; }
+
+        public DurabilityLevel DurabilityLevel { get; set; }
+
+        public CancellationToken Token { get; set; }
+    }
+
     #endregion
 
     #region Increment Options
@@ -130,15 +220,6 @@ namespace Couchbase
 
     #endregion
 
-    #region Unlock Options
-
-    public class UnlockOptions
-    {
-        public TimeSpan Timeout { get; set; }
-    }
-
-    #endregion
-
     #region GetAndTouch Options
 
     public class GetAndTouchOptions
@@ -148,69 +229,36 @@ namespace Couchbase
 
     #endregion
 
-    #region Touch Options
-
-    public class TouchOptions
-    {
-        public TimeSpan Timeout { get; set; }
-    }
-
-    #endregion
-
-    #region GetOptions
-
-    public class GetOptions
-    {
-        public bool IncludeExpiration { get; set; }
-
-        public bool CreatePath { get; set; }
-
-        public TimeSpan Timeout { get; set; }
-
-        public List<string> ProjectList { get; set; }
-
-        public GetOptions WithTimeout(TimeSpan timeout)
-        {
-            Timeout = timeout;
-            return this;
-        }
-
-        public GetOptions Project(params string[] fields)
-        {
-            if(ProjectList == null) ProjectList = new List<string>();
-            ProjectList.AddRange(fields);
-            return this;
-        }
-
-        public GetOptions WithCreatePath(bool createPath)
-        {
-            CreatePath = createPath;
-            return this;
-        }
-
-        public GetOptions WithExpiration()
-        {
-            IncludeExpiration = true;
-            return this;
-        }
-    }
-
-    #endregion
+    #region LookupInOptions
 
     public struct LookupInOptions
     {
         internal TimeSpan _Timeout { get; set; }
 
+        internal CancellationToken _Token { get; set; }
+
         public LookupInOptions Timeout(TimeSpan timeout)
         {
             _Timeout = timeout;
             return this;
-        } 
+        }
+
+        public LookupInOptions Token(CancellationToken token)
+        {
+            _Token = token;
+            return this;
+        }
     }
+
+    #endregion
+
+    #region MutateInOptions
 
     public struct MutateInOptions
     {
         internal TimeSpan _Timeout { get; set; }
+
+        internal CancellationToken _Token { get; set; }
 
         internal TimeSpan _Expiration { get; set; }
 
@@ -231,6 +279,12 @@ namespace Couchbase
         public MutateInOptions Timeout(int minutes = 0, int seconds = 0, int milliseconds=0)
         {
             return Timeout(new TimeSpan(0, 0, minutes, seconds, milliseconds));
+        }
+
+        public MutateInOptions Token(CancellationToken token)
+        {
+            _Token = token;
+            return this;
         }
 
         public MutateInOptions Expiration(TimeSpan expiration)
@@ -277,4 +331,6 @@ namespace Couchbase
             return this;
         }
     }
+
+    #endregion
 }

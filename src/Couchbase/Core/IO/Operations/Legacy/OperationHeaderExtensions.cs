@@ -129,10 +129,10 @@ namespace Couchbase.Core.IO.Operations.Legacy
             while (offset < buffer.Length)
             {
                 var control = buffer[offset++];
-                var type = (FramingExtraType) (control & 0xF0); // first 4 bits
+                var type = (ResponseFramingExtraType) (control & 0xF0); // first 4 bits
                 var length = control & 0x0F; // last 4 bits
 
-                if (type == FramingExtraType.ServerDuration)
+                if (type == ResponseFramingExtraType.ServerDuration)
                 {
                     // read encoded two byte server duration
                     var encoded = Converter.ToUInt16(buffer, offset);

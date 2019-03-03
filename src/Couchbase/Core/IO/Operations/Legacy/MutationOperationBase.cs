@@ -1,4 +1,6 @@
-﻿namespace Couchbase.Core.IO.Operations.Legacy
+using System;
+
+namespace Couchbase.Core.IO.Operations.Legacy
 {
     /// <summary>
     /// Represents an abstract base class for mutation operations (PROTOCOL_BINARY_CMD_SET, DELETE,REPLACE, ADD,
@@ -7,6 +9,9 @@
     /// <typeparam name="T"></typeparam>
     internal abstract class MutationOperationBase : OperationBase
     {
+        public DurabilityLevel DurabilityLevel { get; set; }
+        public TimeSpan? DurabilityTimeout { get; set; }
+
         /// <summary>
         /// Reads the VBucketUUID and Sequence Number from  the extras if the instance has a <see cref="OperationBase.VBucket"/> -
         /// only persistent Couchbase buckets that use VBucket Hashing support mutation tokens.
@@ -15,6 +20,27 @@
         public override void ReadExtras(byte[] buffer)
         {
             TryReadMutationToken(buffer);
+        }
+
+        public override byte[] CreateFramingExtras()
+        {
+            if (DurabilityLevel == DurabilityLevel.None)
+            {
+                return new byte[0];
+            }
+
+            // TODO: omit timeout bytes if no timeout provided
+            var bytes = new byte[2];
+
+            var framingExtra = new FramingExtraInfo(RequestFramingExtraType.DurabilityRequirements, (byte) (bytes.Length - 1));
+            Converter.FromByte(framingExtra.Byte, bytes, 0);
+            Converter.FromByte((byte) DurabilityLevel, bytes, 1);
+
+            // TODO: improve timeout, coerce to 1500ms, etc
+            //var timeout = DurabilityTimeout.HasValue ? DurabilityTimeout.Value.TotalMilliseconds : 0;
+            //Converter.FromUInt16((ushort)timeout, bytes, 2);
+
+            return bytes;
         }
     }
 }
