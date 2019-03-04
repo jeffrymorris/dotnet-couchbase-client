@@ -24,6 +24,16 @@ namespace Couchbase
 
         #endregion
 
+        #region Exists
+
+        Task<IExistsResult> Exists(string id, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));
+
+        Task<IExistsResult> Exists(string id, Action<ExistsOptions> optionsAction);
+
+        Task<IExistsResult> Exists(string id, ExistsOptions options);
+
+        #endregion
+
         #region Upsert
 
         Task<IMutationResult> Upsert<T>(string id, T content,
