@@ -53,10 +53,4 @@
     <PackageReference Include="OpenTracing" Version="0.12.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="System">
-      <HintPath>System</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
