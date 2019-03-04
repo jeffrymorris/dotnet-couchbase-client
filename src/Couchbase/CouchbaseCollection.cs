@@ -378,6 +378,47 @@ namespace Couchbase
             await ExecuteOp(touchOp, options.Token, options.Timeout).ConfigureAwait(false);
         }
 
+        #region GetAndTouch
+
+        public Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, IEnumerable<string> projections = null,
+            TimeSpan? timeout = null, DurabilityLevel durabilityLevel = DurabilityLevel.None,
+            CancellationToken token = default(CancellationToken))
+        {
+            var options = new GetAndTouchOptions
+            {
+                Timeout = timeout,
+                DurabilityLevel = durabilityLevel,
+                Token = token
+            };
+
+            return GetAndTouch(id, expiration, options);
+        }
+
+        public Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, Action<GetAndTouchOptions> optionsAction)
+        {
+            var options = new GetAndTouchOptions();
+            optionsAction(options);
+
+            return GetAndTouch(id, expiration, options);
+        }
+
+        public async Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, GetAndTouchOptions options)
+        {
+            var getAndTouchOp = new GetT<byte[]>
+            {
+                Key = id,
+                Cid = Cid,
+                Expires = expiration.ToTtl(),
+                DurabilityLevel = options.DurabilityLevel,
+                DurabilityTimeout = TimeSpan.FromMilliseconds(1500)
+            };
+
+            await ExecuteOp(getAndTouchOp, options.Token, options.Timeout);
+            return new GetResult(getAndTouchOp.Data.ToArray(), _transcoder);
+        }
+
+        #endregion
+
         #region LookupIn
 
         private static void ConfigureLookupInOptions(LookupInOptions options, TimeSpan? timeout, CancellationToken token)
