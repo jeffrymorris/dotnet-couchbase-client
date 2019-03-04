@@ -11,6 +11,9 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
         public MutateInBuilder<T> Builder { get; set; }
         private readonly IList<OperationSpec> _lookupCommands = new List<OperationSpec>();
 
+        public DurabilityLevel DurabilityLevel { get; set; }
+        public TimeSpan? DurabilityTimeout { get; set; }
+
         public override byte[] Write()
         {
             var keyBytes = CreateKey();
@@ -23,20 +26,55 @@ namespace Couchbase.Core.IO.Operations.Legacy.SubDocument
             return buffer;
         }
 
+        public override byte[] CreateFramingExtras()
+        {
+            if (DurabilityLevel == DurabilityLevel.None)
+            {
+                return new byte[0];
+            }
+
+            // TODO: omit timeout bytes if no timeout provided
+            var bytes = new byte[2];
+
+            var framingExtra = new FramingExtraInfo(RequestFramingExtraType.DurabilityRequirements, (byte) (bytes.Length - 1));
+            Converter.FromByte(framingExtra.Byte, bytes, 0);
+            Converter.FromByte((byte) DurabilityLevel, bytes, 1);
+
+            // TODO: improve timeout, coerce to 1500ms, etc
+            //var timeout = DurabilityTimeout.HasValue ? DurabilityTimeout.Value.TotalMilliseconds : 0;
+            //Converter.FromUInt16((ushort)timeout, bytes, 2);
+
+            return bytes;
+        }
+
         public override void WriteHeader(byte[] buffer)
         {
             var keyBytes = CreateKey();
-            Converter.FromByte((byte)Magic.Request, buffer, HeaderOffsets.Magic);//0
-            Converter.FromByte((byte)OpCode, buffer, HeaderOffsets.Opcode);//1
-            Converter.FromInt16((short)keyBytes.Length, buffer, HeaderOffsets.KeyLength);//2-3
-            Converter.FromByte((byte)ExtrasLength, buffer, HeaderOffsets.ExtrasLength);  //4
+            var framingExtras = CreateFramingExtras();
+
+            if (framingExtras.Length > 0)
+            {
+                Converter.FromByte((byte) Magic.AltRequest, buffer, HeaderOffsets.Magic); //0
+                Converter.FromByte((byte) OpCode, buffer, HeaderOffsets.Opcode); //1
+                Converter.FromByte((byte) framingExtras.Length, buffer, HeaderOffsets.KeyLength); //2
+                Converter.FromByte((byte) keyBytes.Length, buffer, HeaderOffsets.AltKeyLength); //3
+                Converter.FromByte((byte) ExtrasLength, buffer, HeaderOffsets.ExtrasLength); //4
+            }
+            else
+            {
+                Converter.FromByte((byte) Magic.Request, buffer, HeaderOffsets.Magic); //0
+                Converter.FromByte((byte) OpCode, buffer, HeaderOffsets.Opcode); //1
+                Converter.FromInt16((short) keyBytes.Length, buffer, HeaderOffsets.KeyLength); //2-3
+                Converter.FromByte((byte) ExtrasLength, buffer, HeaderOffsets.ExtrasLength); //4
+            }
+
             //5 datatype?
             if (VBucketId.HasValue)
             {
                 Converter.FromInt16(VBucketId.Value, buffer, HeaderOffsets.VBucket);//6-7
             }
 
-            Converter.FromInt32(ExtrasLength + keyBytes.Length + BodyLength, buffer, HeaderOffsets.BodyLength);//8-11
+            Converter.FromInt32(framingExtras.Length + ExtrasLength + keyBytes.Length + BodyLength, buffer, HeaderOffsets.BodyLength);//8-11
             Converter.FromUInt32(Opaque, buffer, HeaderOffsets.Opaque);//12-15
             Converter.FromUInt64(Cas, buffer, HeaderOffsets.Cas);
         }

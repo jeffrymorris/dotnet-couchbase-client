@@ -468,7 +468,7 @@ namespace Couchbase
         #region MutateIn
 
         private static void ConfigureMutateInOptions(MutateInOptions options, TimeSpan? timeout, TimeSpan? expiration,
-            ulong cas, bool createDocument, CancellationToken token)
+            ulong cas, bool createDocument, DurabilityLevel durabilityLevel, CancellationToken token)
         {
             if (timeout.HasValue)
             {
@@ -491,6 +491,11 @@ namespace Couchbase
                 flags ^= SubdocDocFlags.UpsertDocument;
             }
 
+            if (durabilityLevel != DurabilityLevel.None)
+            {
+                options._DurabilityLevel = durabilityLevel;
+            }
+
             if (token != CancellationToken.None)
             {
                 options._Token = token;
@@ -500,14 +505,13 @@ namespace Couchbase
         }
 
         public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false,
-            CancellationToken token = default(CancellationToken))
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
             var builder = new MutateInSpecBuilder();
             configureBuilder(builder);
 
             var options = new MutateInOptions();
-
-            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, token);
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, durabilityLevel, token);
 
             return MutateIn(id, builder.Specs, options);
         }
@@ -532,10 +536,10 @@ namespace Couchbase
         }
 
         public Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false,
-            CancellationToken token = default(CancellationToken))
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
             var options = new MutateInOptions();
-            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, token);
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, durabilityLevel, token);
 
             return MutateIn(id, specs, options);
         }
@@ -557,7 +561,8 @@ namespace Couchbase
             {
                 Key = id,
                 Builder = builder,
-                Cid = Cid
+                Cid = Cid,
+                DurabilityLevel = options._DurabilityLevel
             };
 
             await ExecuteOp(mutation, options._Token, options._Timeout);
