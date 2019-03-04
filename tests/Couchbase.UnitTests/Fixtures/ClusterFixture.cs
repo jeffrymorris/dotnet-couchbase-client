@@ -12,7 +12,7 @@ namespace Couchbase.UnitTests.Fixtures
             var cluster = new Cluster();
             var task = cluster.Initialize(
                 new Configuration()
-                    .WithServers("couchbase://10.112.193.101")
+                    .WithServers("couchbase://127.0.0.1")
                     .WithBucket("default")
                     .WithCredentials("Administrator", "password")
             );
