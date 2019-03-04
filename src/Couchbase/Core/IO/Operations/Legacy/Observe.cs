@@ -12,7 +12,7 @@ namespace Couchbase.Core.IO.Operations.Legacy
             // ReSharper disable once PossibleInvalidOperationException
             Converter.FromInt16(VBucketId.Value, body, 0);
             Converter.FromInt16((short)key.Length, body, 2);
-            Converter.FromString(Key, body, 4);
+            Buffer.BlockCopy(key, 0, body, 4, key.Length);
 
             var header = new byte[OperationHeader.Length];
             Converter.FromByte((byte)Magic.Request, header, HeaderOffsets.Magic);

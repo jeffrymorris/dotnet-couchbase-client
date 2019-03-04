@@ -145,6 +145,53 @@ namespace Couchbase
             };
         }
 
+        public Task<IExistsResult> Exists(string id, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken))
+        {
+            var options = new ExistsOptions
+            {
+                Timeout = timeout,
+                Token = token
+            };
+
+            return Exists(id, options);
+        }
+
+        public Task<IExistsResult> Exists(string id, Action<ExistsOptions> optionsAction)
+        {
+            var options = new ExistsOptions();
+            optionsAction(options);
+
+            return Exists(id, options);
+        }
+
+        public async Task<IExistsResult> Exists(string id, ExistsOptions options)
+        {
+            var existsOp = new Observe
+            {
+                Key = id,
+                Cid = Cid
+            };
+
+            try
+            {
+                await ExecuteOp(existsOp, options.Token, options.Timeout);
+                var keyState = existsOp.GetValue().KeyState;
+                return new ExistsResult
+                {
+                    Exists = existsOp.Success && keyState != KeyState.NotFound && keyState != KeyState.LogicalDeleted,
+                    Cas = existsOp.Cas,
+                    Expiration = TimeSpan.FromMilliseconds(existsOp.Expires)
+                };
+            }
+            catch (KeyNotFoundException)
+            {
+                return new ExistsResult
+                {
+                    Exists = false
+                };
+            }
+        }
+
         public Task<IMutationResult> Upsert<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = default(TimeSpan),
             ulong cas = 0, PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
@@ -378,6 +425,47 @@ namespace Couchbase
             await ExecuteOp(touchOp, options.Token, options.Timeout).ConfigureAwait(false);
         }
 
+        #region GetAndTouch
+
+        public Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, IEnumerable<string> projections = null,
+            TimeSpan? timeout = null, DurabilityLevel durabilityLevel = DurabilityLevel.None,
+            CancellationToken token = default(CancellationToken))
+        {
+            var options = new GetAndTouchOptions
+            {
+                Timeout = timeout,
+                DurabilityLevel = durabilityLevel,
+                Token = token
+            };
+
+            return GetAndTouch(id, expiration, options);
+        }
+
+        public Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, Action<GetAndTouchOptions> optionsAction)
+        {
+            var options = new GetAndTouchOptions();
+            optionsAction(options);
+
+            return GetAndTouch(id, expiration, options);
+        }
+
+        public async Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, GetAndTouchOptions options)
+        {
+            var getAndTouchOp = new GetT<byte[]>
+            {
+                Key = id,
+                Cid = Cid,
+                Expires = expiration.ToTtl(),
+                DurabilityLevel = options.DurabilityLevel,
+                DurabilityTimeout = TimeSpan.FromMilliseconds(1500)
+            };
+
+            await ExecuteOp(getAndTouchOp, options.Token, options.Timeout);
+            return new GetResult(getAndTouchOp.Data.ToArray(), _transcoder);
+        }
+
+        #endregion
+
         #region LookupIn
 
         private static void ConfigureLookupInOptions(LookupInOptions options, TimeSpan? timeout, CancellationToken token)
@@ -505,7 +593,7 @@ namespace Couchbase
         #region MutateIn
 
         private static void ConfigureMutateInOptions(MutateInOptions options, TimeSpan? timeout, TimeSpan? expiration,
-            ulong cas, bool createDocument, CancellationToken token)
+            ulong cas, bool createDocument, DurabilityLevel durabilityLevel, CancellationToken token)
         {
             if (timeout.HasValue)
             {
@@ -528,6 +616,11 @@ namespace Couchbase
                 flags ^= SubdocDocFlags.UpsertDocument;
             }
 
+            if (durabilityLevel != DurabilityLevel.None)
+            {
+                options._DurabilityLevel = durabilityLevel;
+            }
+
             if (token != CancellationToken.None)
             {
                 options._Token = token;
@@ -537,14 +630,13 @@ namespace Couchbase
         }
 
         public Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false,
-            CancellationToken token = default(CancellationToken))
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
             var builder = new MutateInSpecBuilder();
             configureBuilder(builder);
 
             var options = new MutateInOptions();
-
-            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, token);
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, durabilityLevel, token);
 
             return MutateIn(id, builder.Specs, options);
         }
@@ -569,10 +661,10 @@ namespace Couchbase
         }
 
         public Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false,
-            CancellationToken token = default(CancellationToken))
+            DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
         {
             var options = new MutateInOptions();
-            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, token);
+            ConfigureMutateInOptions(options, timeout, expiration, cas, createDocument, durabilityLevel, token);
 
             return MutateIn(id, specs, options);
         }
@@ -594,7 +686,8 @@ namespace Couchbase
             {
                 Key = id,
                 Builder = builder,
-                Cid = Cid
+                Cid = Cid,
+                DurabilityLevel = options._DurabilityLevel
             };
 
             await ExecuteOp(mutation, options._Token, options._Timeout);

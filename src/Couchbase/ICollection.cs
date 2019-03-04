@@ -24,6 +24,16 @@ namespace Couchbase
 
         #endregion
 
+        #region Exists
+
+        Task<IExistsResult> Exists(string id, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));
+
+        Task<IExistsResult> Exists(string id, Action<ExistsOptions> optionsAction);
+
+        Task<IExistsResult> Exists(string id, ExistsOptions options);
+
+        #endregion
+
         #region Upsert
 
         Task<IMutationResult> Upsert<T>(string id, T content,
@@ -125,6 +135,16 @@ namespace Couchbase
 
         Task<IGetResult> GetAndLock(string id, TimeSpan expiration, GetAndLockOptions options);
 
+        #endregion      
+      
+        #region GetAndTouch
+
+        Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, IEnumerable<string> projections = null, TimeSpan? timeout = null, DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken));
+
+        Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, Action<GetAndTouchOptions> optionsAction);
+
+        Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, GetAndTouchOptions options);
+
         #endregion
 
         #region LookupIn
@@ -145,13 +165,13 @@ namespace Couchbase
 
         #region MutateIn
 
-        Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false, CancellationToken token = default(CancellationToken));
+        Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false, DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken));
 
         Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, Action<MutateInOptions> configureOptions);
 
         Task<IMutationResult> MutateIn(string id, Action<MutateInSpecBuilder> configureBuilder, MutateInOptions options);
 
-        Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false, CancellationToken token = default(CancellationToken));
+        Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, TimeSpan? timeout = null, TimeSpan? expiration = null, ulong cas = 0, bool createDocument = false, DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken));
 
         Task<IMutationResult> MutateIn(string id, IEnumerable<OperationSpec> specs, Action<MutateInOptions> configureOptions);
 
