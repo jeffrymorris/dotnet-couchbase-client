@@ -117,6 +117,16 @@ namespace Couchbase
 
         #endregion
 
+        #region GetAndLock
+
+        Task<IGetResult> GetAndLock(string id, TimeSpan expiration, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));
+
+        Task<IGetResult> GetAndLock(string id, TimeSpan expiration, Action<GetAndLockOptions> optionsAction);
+
+        Task<IGetResult> GetAndLock(string id, TimeSpan expiration, GetAndLockOptions options);
+
+        #endregion
+
         #region LookupIn
 
         Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));

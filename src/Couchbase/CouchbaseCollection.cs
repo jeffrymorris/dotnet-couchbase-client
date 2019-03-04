@@ -465,6 +465,43 @@ namespace Couchbase
 
         #endregion
 
+        #region GetAndLock
+
+        public Task<IGetResult> GetAndLock(string id, TimeSpan expiration, TimeSpan? timeout = null,
+            CancellationToken token = default(CancellationToken))
+        {
+            var options = new GetAndLockOptions
+            {
+                Timeout = timeout,
+                Token = token
+            };
+
+            return GetAndLock(id, expiration, options);
+        }
+
+        public Task<IGetResult> GetAndLock(string id, TimeSpan expiration, Action<GetAndLockOptions> optionsAction)
+        {
+            var options = new GetAndLockOptions();
+            optionsAction(options);
+
+            return GetAndLock(id, expiration, options);
+        }
+
+        public async Task<IGetResult> GetAndLock(string id, TimeSpan expiration, GetAndLockOptions options)
+        {
+            var getAndLockOp = new GetL<byte[]>
+            {
+                Key = id,
+                Cid = Cid,
+                Expiration = expiration.ToTtl()
+            };
+
+            await ExecuteOp(getAndLockOp, options.Token, options.Timeout);
+            return new GetResult(getAndLockOp.Data.ToArray(), _transcoder);
+        }
+
+        #endregion
+
         #region MutateIn
 
         private static void ConfigureMutateInOptions(MutateInOptions options, TimeSpan? timeout, TimeSpan? expiration,
