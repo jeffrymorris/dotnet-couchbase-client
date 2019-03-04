@@ -222,9 +222,13 @@ namespace Couchbase
 
     #region GetAndTouch Options
 
-    public class GetAndTouchOptions
+    public struct GetAndTouchOptions
     {
-        public TimeSpan Timeout { get; set; }
+        public TimeSpan? Timeout { get; set; }
+
+        public DurabilityLevel DurabilityLevel { get; set; }
+
+        public CancellationToken Token { get; set; }
     }
 
     #endregion

@@ -117,6 +117,16 @@ namespace Couchbase
 
         #endregion
 
+        #region GetAndTouch
+
+        Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, IEnumerable<string> projections = null, TimeSpan? timeout = null, DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken));
+
+        Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, Action<GetAndTouchOptions> optionsAction);
+
+        Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, GetAndTouchOptions options);
+
+        #endregion
+
         #region LookupIn
 
         Task<ILookupInResult> LookupIn(string id, Action<LookupInSpecBuilder> configureBuilder, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));

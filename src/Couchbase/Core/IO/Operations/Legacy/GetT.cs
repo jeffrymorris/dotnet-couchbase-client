@@ -1,6 +1,6 @@
 namespace Couchbase.Core.IO.Operations.Legacy
 {
-    internal class GetT<T> : OperationBase<T>
+    internal class GetT<T> : MutationOperationBase<T>
     {
         public override byte[] CreateExtras()
         {
