@@ -50,6 +50,17 @@ namespace Couchbase
 
     #endregion
 
+    #region Exists Options
+
+    public struct ExistsOptions
+    {
+        public TimeSpan? Timeout { get; set; }
+
+        public CancellationToken Token { get;set; }
+    }
+
+    #endregion
+
     #region Upsert Options
 
     public struct UpsertOptions

@@ -145,6 +145,53 @@ namespace Couchbase
             };
         }
 
+        public Task<IExistsResult> Exists(string id, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken))
+        {
+            var options = new ExistsOptions
+            {
+                Timeout = timeout,
+                Token = token
+            };
+
+            return Exists(id, options);
+        }
+
+        public Task<IExistsResult> Exists(string id, Action<ExistsOptions> optionsAction)
+        {
+            var options = new ExistsOptions();
+            optionsAction(options);
+
+            return Exists(id, options);
+        }
+
+        public async Task<IExistsResult> Exists(string id, ExistsOptions options)
+        {
+            var existsOp = new Observe
+            {
+                Key = id,
+                Cid = Cid
+            };
+
+            try
+            {
+                await ExecuteOp(existsOp, options.Token, options.Timeout);
+                var keyState = existsOp.GetValue().KeyState;
+                return new ExistsResult
+                {
+                    Exists = existsOp.Success && keyState != KeyState.NotFound && keyState != KeyState.LogicalDeleted,
+                    Cas = existsOp.Cas,
+                    Expiration = TimeSpan.FromMilliseconds(existsOp.Expires)
+                };
+            }
+            catch (KeyNotFoundException)
+            {
+                return new ExistsResult
+                {
+                    Exists = false
+                };
+            }
+        }
+
         public Task<IMutationResult> Upsert<T>(string id, T content, TimeSpan? timeout = null, TimeSpan expiration = default(TimeSpan),
             ulong cas = 0, PersistTo persistTo = PersistTo.None, ReplicateTo replicateTo = ReplicateTo.None,
             DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken))
