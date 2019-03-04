@@ -222,11 +222,11 @@ namespace Couchbase
 
     #region GetAndLock Options
 
-    public class GetAndLockOptions
+    public struct GetAndLockOptions
     {
-        public TimeSpan Timeout { get; set; }
+        public TimeSpan? Timeout { get; set; }
 
-        public TimeSpan Expiration { get; set; }
+        public CancellationToken Token { get; set; }
     }
 
     #endregion

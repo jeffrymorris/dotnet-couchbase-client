@@ -127,6 +127,16 @@ namespace Couchbase
 
         #endregion
 
+        #region GetAndLock
+
+        Task<IGetResult> GetAndLock(string id, TimeSpan expiration, TimeSpan? timeout = null, CancellationToken token = default(CancellationToken));
+
+        Task<IGetResult> GetAndLock(string id, TimeSpan expiration, Action<GetAndLockOptions> optionsAction);
+
+        Task<IGetResult> GetAndLock(string id, TimeSpan expiration, GetAndLockOptions options);
+
+        #endregion      
+      
         #region GetAndTouch
 
         Task<IGetResult> GetAndTouch(string id, TimeSpan expiration, IEnumerable<string> projections = null, TimeSpan? timeout = null, DurabilityLevel durabilityLevel = DurabilityLevel.None, CancellationToken token = default(CancellationToken));
