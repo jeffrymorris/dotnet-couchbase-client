@@ -1,9 +1,8 @@
-using System;
 using System.Threading.Tasks;
-using Couchbase.UnitTests.Fixtures;
+using Couchbase.IntegrationTests.Fixtures;
 using Xunit;
 
-namespace Couchbase.UnitTests
+namespace Couchbase.IntegrationTests
 {
     public class SynchronousDurabilityTests : IClassFixture<ClusterFixture>
     {
