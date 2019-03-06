@@ -47,6 +47,7 @@ namespace Couchbase.Services.Query
         {
             var uriBuilder = new UriBuilder(Configuration.Servers.GetRandom())
             {
+                Scheme = "http",
                 Path = "/query",
                 Port = 8093
             };
