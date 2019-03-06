@@ -6,7 +6,7 @@ namespace Couchbase
 {
     #region GetOptions
 
-    public struct GetOptions
+    public class GetOptions
     {
         public bool IncludeExpiration { get; set; }
 
@@ -52,7 +52,7 @@ namespace Couchbase
 
     #region Exists Options
 
-    public struct ExistsOptions
+    public class ExistsOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -63,7 +63,7 @@ namespace Couchbase
 
     #region Upsert Options
 
-    public struct UpsertOptions
+    public class UpsertOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -84,7 +84,7 @@ namespace Couchbase
 
     #region Insert Options
 
-    public struct InsertOptions
+    public class InsertOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -105,7 +105,7 @@ namespace Couchbase
 
     #region Replace Options
 
-    public struct ReplaceOptions
+    public class ReplaceOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -126,7 +126,7 @@ namespace Couchbase
 
     #region Remove Options
 
-    public struct RemoveOptions
+    public class RemoveOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -145,7 +145,7 @@ namespace Couchbase
 
     #region Unlock Options
 
-    public struct UnlockOptions
+    public class UnlockOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -158,7 +158,7 @@ namespace Couchbase
 
     #region Touch Options
 
-    public struct TouchOptions
+    public class TouchOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -222,7 +222,7 @@ namespace Couchbase
 
     #region GetAndLock Options
 
-    public struct GetAndLockOptions
+    public class GetAndLockOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -233,7 +233,7 @@ namespace Couchbase
 
     #region GetAndTouch Options
 
-    public struct GetAndTouchOptions
+    public class GetAndTouchOptions
     {
         public TimeSpan? Timeout { get; set; }
 
@@ -246,7 +246,7 @@ namespace Couchbase
 
     #region LookupInOptions
 
-    public struct LookupInOptions
+    public class LookupInOptions
     {
         internal TimeSpan _Timeout { get; set; }
 
@@ -269,7 +269,7 @@ namespace Couchbase
 
     #region MutateInOptions
 
-    public struct MutateInOptions
+    public class MutateInOptions
     {
         internal TimeSpan _Timeout { get; set; }
 
