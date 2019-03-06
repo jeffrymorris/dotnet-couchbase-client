@@ -57,7 +57,7 @@ namespace Couchbase
             if (token == CancellationToken.None)
             {
                 cts = CancellationTokenSource.CreateLinkedTokenSource(token);
-                cts.CancelAfter(timeout ?? DefaultTimeout);
+                cts.CancelAfter(timeout.HasValue && timeout != TimeSpan.Zero ? timeout.Value : DefaultTimeout);
                 token = cts.Token;
             }
 
@@ -99,7 +99,7 @@ namespace Couchbase
             return Get(id, options);
         }
 
-        public async Task<IGetResult> Get(string id, GetOptions options = new GetOptions())
+        public async Task<IGetResult> Get(string id, GetOptions options)
         {
             //A projection operation
             var enumerable = options.ProjectList ?? new List<string>();
