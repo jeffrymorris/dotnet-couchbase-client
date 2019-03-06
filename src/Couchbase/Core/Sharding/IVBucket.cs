@@ -12,12 +12,12 @@ namespace Couchbase.Core.Sharding
         /// </summary>
         /// <param name="index">The index of the replica.</param>
         /// <returns>An <see cref="IServer"/> if the replica is found, otherwise null.</returns>
-        IPEndPoint LocateReplica(int index);
+        IPEndPoint LocateReplica(short index);
 
         /// <summary>
         /// Gets an array of replica indexes.
         /// </summary>
-        int[] Replicas { get; }
+        short[] Replicas { get; }
 
         /// <summary>
         /// Gets the index of the VBucket.
@@ -25,7 +25,7 @@ namespace Couchbase.Core.Sharding
         /// <value>
         /// The index.
         /// </value>
-        int Index { get; }
+        short Index { get; }
 
         /// <summary>
         /// Gets the index of the primary node in the VBucket.
@@ -33,7 +33,7 @@ namespace Couchbase.Core.Sharding
         /// <value>
         /// The primary index that the key has mapped to.
         /// </value>
-        int Primary { get; }
+        short Primary { get; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has replicas.
