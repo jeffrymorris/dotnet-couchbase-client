@@ -11,11 +11,12 @@ namespace Couchbase.Core.Sharding
     /// </summary>
     internal class VBucket : IVBucket
     {
-        private readonly int[] _replicas;
+        private readonly short[] _replicas;
         private readonly VBucketServerMap _vBucketServerMap;
         private readonly ICollection<IPEndPoint> _endPoints;
 
-        public VBucket(ICollection<IPEndPoint> endPoints, int index, int primary, int[] replicas, uint rev, VBucketServerMap vBucketServerMap, string bucketName)
+        public VBucket(ICollection<IPEndPoint> endPoints, short index, short primary, short[] replicas, uint rev,
+            VBucketServerMap vBucketServerMap, string bucketName)
         {
             _endPoints = endPoints;
             Index = index;
@@ -73,7 +74,7 @@ namespace Couchbase.Core.Sharding
         /// </summary>
         /// <param name="index">The index of the replica.</param>
         /// <returns>An <see cref="IServer"/> if the replica is found, otherwise null.</returns>
-        public IPEndPoint LocateReplica(int index)
+        public IPEndPoint LocateReplica(short index)
         {
             try
             {
@@ -89,7 +90,7 @@ namespace Couchbase.Core.Sharding
         /// <summary>
         /// Gets an array of replica indexes.
         /// </summary>
-        public int[] Replicas => _replicas;
+        public short[] Replicas => _replicas;
 
         /// <summary>
         /// Gets the index of the VBucket.
@@ -97,7 +98,7 @@ namespace Couchbase.Core.Sharding
         /// <value>
         /// The index.
         /// </value>
-        public int Index { get; }
+        public short Index { get; }
 
         /// <summary>
         /// Gets the index of the primary node in the VBucket.
@@ -105,7 +106,7 @@ namespace Couchbase.Core.Sharding
         /// <value>
         /// The primary index that the key has mapped to.
         /// </value>
-        public int Primary { get; }
+        public short Primary { get; }
 
         /// <summary>
         /// Gets or sets the configuration revision.

@@ -17,8 +17,8 @@ namespace Couchbase.Core.Sharding
             HashAlgorithm = string.Empty;
             NumReplicas = 0;
             ServerList = new string[0];
-            VBucketMap = new int[0][];
-            VBucketMapForward = new int[0][];
+            VBucketMap = new short[0][];
+            VBucketMapForward = new short[0][];
         }
 
         [JsonProperty("hashAlgorithm")]
@@ -31,10 +31,10 @@ namespace Couchbase.Core.Sharding
         public string[] ServerList { get; set; }
 
         [JsonProperty("vBucketMap")]
-        public int[][] VBucketMap { get; set; }
+        public short[][] VBucketMap { get; set; }
 
         [JsonProperty("vBucketMapForward")]
-        public int[][] VBucketMapForward { get; set; }
+        public short[][] VBucketMapForward { get; set; }
 
         [JsonIgnore]
         public List<IPEndPoint> IPEndPoints
@@ -50,8 +50,8 @@ namespace Couchbase.Core.Sharding
         {
             return (other != null
                     && ServerList.AreEqual<string>(other.ServerList)
-                    && VBucketMap.AreEqual(other.VBucketMap))
-                    && VBucketMapForward.AreEqual(other.VBucketMapForward);
+                    && VBucketMap.AreEqual<short>(other.VBucketMap))
+                    && VBucketMapForward.AreEqual<short>(other.VBucketMapForward);
         }
 
         public override bool Equals(object obj)

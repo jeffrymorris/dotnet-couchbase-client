@@ -11,9 +11,9 @@ namespace Couchbase.Core.Sharding
     /// </summary>
     internal class VBucketKeyMapper : IKeyMapper
     {
-        private readonly int _mask = 1023;
-        private readonly Dictionary<int, IVBucket> _vBuckets;
-        private readonly Dictionary<int, IVBucket> _vForwardBuckets;
+        private readonly short _mask = 1023;
+        private readonly Dictionary<short, IVBucket> _vBuckets;
+        private readonly Dictionary<short, IVBucket> _vForwardBuckets;
         private readonly VBucketServerMap _vBucketServerMap;
         private readonly ICollection<IPEndPoint> _endPoints;
         private readonly string _bucketName;
@@ -29,7 +29,7 @@ namespace Couchbase.Core.Sharding
             _bucketName = config.Name;
             _vBuckets = CreateVBucketMap();
             _vForwardBuckets = CreateVBucketMapForwards();
-            _mask = _vBuckets.Count - 1;
+            _mask =  (short) (_vBuckets.Count - 1);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Couchbase.Core.Sharding
         /// </value>
         /// <param name="index">The index.</param>
         /// <returns></returns>
-        public IVBucket this[int index] => _vBuckets[index];
+        public IVBucket this[short index] => _vBuckets[index];
 
         /// <summary>
         /// Maps a given Key to it's node in a Couchbase Cluster.
@@ -71,14 +71,14 @@ namespace Couchbase.Core.Sharding
             return _vForwardBuckets.Count > 0;
         }
 
-        public int GetIndex(string key)
+        public short GetIndex(string key)
         {
             using (var crc32 = new Crc32())
             {
                 var keyBytes = Encoding.UTF8.GetBytes(key);
                 var hashedKeyBytes = crc32.ComputeHash(keyBytes);
-                var hash = BitConverter.ToUInt32(hashedKeyBytes, 0);
-                return (int)hash & _mask;
+                var hash = BitConverter.ToInt16(hashedKeyBytes, 0);
+                return (short) (hash & _mask);
             }
         }
 
@@ -86,20 +86,20 @@ namespace Couchbase.Core.Sharding
         /// Creates a mapping of VBuckets to nodes.
         /// </summary>
         /// <returns>A mapping of indexes and Vbuckets.</returns>
-        Dictionary<int, IVBucket> CreateVBucketMap()
+        Dictionary<short, IVBucket> CreateVBucketMap()
         {
-            var vBuckets = new Dictionary<int, IVBucket>();
+            var vBuckets = new Dictionary<short, IVBucket>();
             var vBucketMap = _vBucketServerMap.VBucketMap;
 
             for (var i = 0; i < vBucketMap.Length; i++)
             {
                 var primary = vBucketMap[i][0];
-                var replicas = new int[vBucketMap[i].Length-1];
+                var replicas = new short[vBucketMap[i].Length-1];
                 for (var r = 1; r < vBucketMap[i].Length; r++)
                 {
                     replicas[r - 1] = vBucketMap[i][r];
                 }
-                vBuckets.Add(i, new VBucket(_endPoints, i, primary, replicas, Rev, _vBucketServerMap, _bucketName));
+                vBuckets.Add((short)i, new VBucket(_endPoints, (short)i, primary, replicas, Rev, _vBucketServerMap, _bucketName));
             }
             return vBuckets;
         }
@@ -108,9 +108,9 @@ namespace Couchbase.Core.Sharding
         /// Creates a mapping of VBuckets to nodes.
         /// </summary>
         /// <returns>A mapping of indexes and Vbuckets.</returns>
-        Dictionary<int, IVBucket> CreateVBucketMapForwards()
+        Dictionary<short, IVBucket> CreateVBucketMapForwards()
         {
-            var vBucketMapForwards = new Dictionary<int, IVBucket>();
+            var vBucketMapForwards = new Dictionary<short, IVBucket>();
             var vBucketMapForward = _vBucketServerMap.VBucketMapForward;
 
             if (vBucketMapForward != null)
@@ -118,23 +118,23 @@ namespace Couchbase.Core.Sharding
                 for (var i = 0; i < vBucketMapForward.Length; i++)
                 {
                     var primary = vBucketMapForward[i][0];
-                    var replicas = new int[vBucketMapForward[i].Length-1];
+                    var replicas = new short[vBucketMapForward[i].Length-1];
                     for (var r = 1; r < vBucketMapForward[i].Length; r++)
                     {
                         replicas[r - 1] = vBucketMapForward[i][r];
                     }
-                    vBucketMapForwards.Add(i, new VBucket(_endPoints, i, primary, replicas, Rev, _vBucketServerMap, _bucketName));
+                    vBucketMapForwards.Add((short)i, new VBucket(_endPoints, (short)i, primary, replicas, Rev, _vBucketServerMap, _bucketName));
                 }
             }
             return vBucketMapForwards;
         }
 
-        internal Dictionary<int, IVBucket> GetVBuckets()
+        internal Dictionary<short, IVBucket> GetVBuckets()
         {
             return _vBuckets;
         }
 
-        internal Dictionary<int, IVBucket> GetVBucketsForwards()
+        internal Dictionary<short, IVBucket> GetVBucketsForwards()
         {
             return _vForwardBuckets;
         }

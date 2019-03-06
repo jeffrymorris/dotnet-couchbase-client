@@ -280,7 +280,7 @@ namespace Couchbase
         public async Task Send(IOperation op, TaskCompletionSource<byte[]> tcs)
         {
             var vBucket = (VBucket) _keyMapper.MapKey(op.Key);
-            op.VBucketId = (short?)vBucket.Index; //hack - make vBucketIndex a short
+            op.VBucketId = vBucket.Index; //hack - make vBucketIndex a short
 
             var node =  vBucket.LocatePrimary();
             await Connections[node].SendAsync(op.Write(), op.Completed).ConfigureAwait(false);
