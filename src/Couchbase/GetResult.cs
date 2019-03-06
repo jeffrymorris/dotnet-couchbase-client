@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
 using Couchbase.Core.IO.Converters;
 using Couchbase.Core.IO.Operations;
 using Couchbase.Core.IO.Operations.Legacy;
@@ -11,7 +8,6 @@ using Couchbase.Core.IO.Serializers;
 using Couchbase.Core.IO.Transcoders;
 using Couchbase.Utils;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace Couchbase
 {
@@ -20,7 +16,7 @@ namespace Couchbase
         private readonly byte[] _contentBytes;
         private readonly List<OperationSpec> _specs;
         private readonly ITypeTranscoder _transcoder;
-        private ITypeSerializer _serializer;
+        private readonly ITypeSerializer _serializer;
         private readonly IByteConverter _converter;
 
         internal GetResult(byte[] contentBytes, ITypeTranscoder transcoder, List<OperationSpec> specs = null)
@@ -65,16 +61,13 @@ namespace Couchbase
                 }
                 catch (Exception e)
                 {
-                    //ignore for now
+                    //ignore for now - these are cases where a root attribute is already mapped
+                    //for example "attributes" and "attributes.hair" will cause exceptions
                 }
             }
             return root.ToObject<T>();
         }
 
-        void AddToRoot(JObject jObject)
-        {
-
-        }
         public T ContentAs<T>(ITypeSerializer serializer)
         {
             throw new NotImplementedException();

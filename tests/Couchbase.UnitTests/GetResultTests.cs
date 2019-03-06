@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.Collections.Generic;
 using Couchbase.Core.IO.Converters;
 using Couchbase.Core.IO.Operations;
-using Couchbase.Core.IO.Operations.Legacy;
 using Couchbase.Core.IO.Operations.Legacy.SubDocument;
 using Couchbase.Core.IO.Operations.SubDocument;
 using Couchbase.Core.IO.Transcoders;
-using Couchbase.UnitTests.Utils;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Couchbase.UnitTests
@@ -129,7 +125,6 @@ namespace Couchbase.UnitTests
             public Attributes attributes { get; set; }
         }
 
-
         [Fact]
         public void Test_Projection()
         {
@@ -166,6 +161,25 @@ namespace Couchbase.UnitTests
 
             var result = readResult.ContentAs<Person>();
             Assert.Equal("Emmy-lou Dickerson",result.name);
+        }
+
+        [Fact]
+        public void Test_Projection_With_Dictionary()
+        {
+            var getRequest = new MultiLookup<byte[]>();
+            getRequest.ReadAsync(_lookupInPacket);
+
+            var readResult = new GetResult(_lookupInPacket,
+                new DefaultTranscoder(new DefaultConverter()),
+                _lookupInSpecs)
+            {
+                OpCode = OpCode.MultiLookup,
+                Flags = getRequest.Flags,
+                Header = getRequest.Header
+            };
+
+            var result = readResult.ContentAs<Dictionary<string, dynamic>>();
+            Assert.Equal(result["name"], "Emmy-lou Dickerson");
         }
     }
 }

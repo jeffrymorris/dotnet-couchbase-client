@@ -99,7 +99,7 @@ namespace Couchbase
             return Get(id, options);
         }
 
-        public async Task<IGetResult> Get(string id, GetOptions options)
+        public async Task<IGetResult> Get(string id, GetOptions options = new GetOptions())
         {
             //A projection operation
             var enumerable = options.ProjectList ?? new List<string>();
@@ -117,7 +117,7 @@ namespace Couchbase
                 }
 
                 var lookupOp = await ExecuteLookupIn(id, specs, new LookupInOptions().Timeout(options.Timeout.Value));
-                return new GetResult(lookupOp.Data.ToArray(), _transcoder, null)
+                return new GetResult(lookupOp.Data.ToArray(), _transcoder, specs)
                 {
                     Id = lookupOp.Key,
                     Cas = lookupOp.Cas,
