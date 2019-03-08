@@ -57,7 +57,7 @@ namespace Couchbase
             if (token == CancellationToken.None)
             {
                 cts = CancellationTokenSource.CreateLinkedTokenSource(token);
-                cts.CancelAfter(timeout ?? DefaultTimeout);
+                cts.CancelAfter(timeout.HasValue && timeout != TimeSpan.Zero ? timeout.Value : DefaultTimeout);
                 token = cts.Token;
             }
 
